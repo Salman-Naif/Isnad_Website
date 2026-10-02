@@ -32,7 +32,7 @@
 
 | Criterion | Weight | Evidence |
 | --- | --- | --- |
-| Technical quality and use of AI | 25% | Semantic search (Qwen3 embeddings, 1024 dims) plus a literal-quote index; RAG chat with an answer check; isnad trees read from the narrations. 600+ automated tests at five levels (unit, integration, API, security, system), CI on every push. README "How it fits together"; Isnad_v1 README |
+| Technical quality and use of AI | 25% | Semantic search (Qwen3 embeddings, 1024 dims) plus a literal-quote index; RAG chat with an answer check; isnad trees read from the narrations. 600+ automated tests at five levels (unit, integration, API, security, system), CI on every push. README "How it fits together"; Isnad_Database README |
 | Reliability and scientific safety | 15% | Rules of the reference pack's content levels in the prompt, a retrieval gate and a deterministic answer check (`docs/SAFETY.md`); rulings only from the sources; the evaluation set run 3× per case (`docs/evaluation/`) |
 | Innovation and added value | 15% | Verdicts that tell a distorted quote from an authentic one (word overlap + similarity), the differing words highlighted, isnad trees merged across books, every chat quotation verified word for word against the sources |
 | Beneficiary experience, communication and accessibility | 10% | Arabic, right-to-left, mobile-first; clear verdicts and next steps; keyboard and screen-reader labels; the AI nature and privacy stated on the page |
@@ -42,7 +42,7 @@
 
 ## Verifying it yourself
 
-- **Live demo:** _the website's public URL_ (to be added by the team).
+- **Live demo:** https://isnadapplication-production.up.railway.app
 - **Tests:** `pytest` in each repository (README "Development and testing").
 - **Chat evaluation:** start the site (README "Running locally"), then
   `python scripts/evaluate_chat.py --url http://127.0.0.1:8000 --repeat 3` — it writes

@@ -2,7 +2,7 @@
 
 Tests for the public website: verification, chat with the model (answered only from the
 database sources), and the OpenRouter model itself. The database's own tests live in the
-**Isnad_v1** repository.
+**Isnad_Database** repository.
 
 | File                                  | What it is                                           |
 | ------------------------------------- | ---------------------------------------------------- |

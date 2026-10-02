@@ -2,6 +2,8 @@
 
 > An intelligent conversational system for verifying the authenticity of hadiths and Islamic quotes
 
+**Live demo:** https://isnadapplication-production.up.railway.app
+
 The public website of Isnad. A visitor enters any hadith or quote in any wording; the site
 matches it semantically against the approved sources, shows the ruling attributed to the
 scholar who issued it with the chain of narration (sanad), warns when the wording is a
@@ -9,7 +11,7 @@ distorted version of a known text, and lets the visitor ask the model about it �
 only from the sources.
 
 The sources, their search and the admin dashboard live in the separate database service,
-**Isnad_v1**. This repository is the website only.
+**Isnad_Database**. This repository is the website only.
 
 **Team:** فريق إسناد (Isnad) — سلمان نايف المحيسن (almuhaysins@outlook.sa) ·
 نوت عبدالعزيز الجهني (noota123db@gmail.com)
@@ -40,7 +42,7 @@ and data keep their own licenses: [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENS
 ## How it fits together
 
 ```
-Visitor ──► Isnad_app (this repo) ──SITE_API_KEY──► Isnad_v1 database service
+Visitor ──► Isnad_Website (this repo) ──SITE_API_KEY──► Isnad_Database database service
                     │                                  • search the sources
                     │                                  • site controls (maintenance, features)
                     │                                  • statistics (visits, searches, questions)
@@ -152,7 +154,7 @@ Reasoning is switched off (`LLM_REASONING=false`): answers take a few seconds in
 ## Project structure
 
 ```
-isnad_app/
+isnad_website/
 ├── app/
 │   ├── main.py                 # Entry point, security headers, routes
 │   ├── config.py               # Settings from environment variables
@@ -227,7 +229,7 @@ The tests are grouped by level, one folder each, and each level can be run on it
 | Integration   | `tests/integration`  | Components together: the database client over HTTP, the real OpenAI SDK                  |
 | API           | `tests/api`          | Every endpoint's status codes, response shape and input validation    |
 | Security      | `tests/security`     | Access to every route, injection, uploads, sessions, headers, secrets |
-| System        | `tests/system`       | The real server as a process over real HTTP, end to end — the website and the database service (from `../Isnad_v1`, or `ISNAD_DB_REPO`) together |
+| System        | `tests/system`       | The real server as a process over real HTTP, end to end — the website and the database service (from `../Isnad_Database`, or `ISNAD_DB_REPO`) together |
 
 ```bash
 pytest                      # everything

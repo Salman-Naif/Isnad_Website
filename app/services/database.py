@@ -1,5 +1,5 @@
 """
-Client for the Isnad database service (the Isnad_v1 repository).
+Client for the Isnad database service (the Isnad_Database repository).
 
 All calls go server-to-server with SITE_API_KEY in the X-API-Key header; the key never
 reaches the visitor's browser.

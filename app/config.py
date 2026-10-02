@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # --- Identity ---
     app_name: str = "Isnad"
 
-    # --- Database service (Isnad_v1) ---
+    # --- Database service (Isnad_Database) ---
     # Its own URL, e.g. https://<database-service>.up.railway.app — no trailing slash.
     database_url: str = ""
     # Same value as SITE_API_KEY on the database service. Stays on this server only.

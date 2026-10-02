@@ -2,8 +2,8 @@
 wired together exactly as on Railway, with OpenRouter replaced by a local stub server.
 
 The database service's code is taken from its own repository, checked out next to this one
-(../Isnad_v1, or the ISNAD_DB_REPO environment variable) with its virtual environment
-(.venv). Without it, the system tests are skipped.
+(../Isnad_Database — or ../Isnad_v1, its earlier name — or the ISNAD_DB_REPO environment
+variable) with its virtual environment (.venv). Without it, the system tests are skipped.
 """
 
 import os
@@ -19,7 +19,8 @@ import pytest
 from tests.system.stub_openrouter import StubOpenRouter
 
 APP_REPO = Path(__file__).resolve().parents[2]
-DB_REPO = Path(os.environ.get("ISNAD_DB_REPO", APP_REPO.parent / "Isnad_v1"))
+_SIBLINGS = [APP_REPO.parent / name for name in ("Isnad_Database", "Isnad_v1")]
+DB_REPO = Path(os.environ.get("ISNAD_DB_REPO") or next((p for p in _SIBLINGS if p.exists()), _SIBLINGS[0]))
 SITE_KEY = "system-test-site-key-0123456789abcdef"
 OWNER, OWNER_PASSWORD = "owner", "owner-password-1"
 OWNER_NEW_PASSWORD = "owner-password-2"  # the first-start password must be replaced before uploading

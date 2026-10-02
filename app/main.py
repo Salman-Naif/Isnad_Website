@@ -2,7 +2,7 @@
 Isnad main website — entry point.
 
 The public site: visitors verify a hadith or quote and ask the model about it. The sources
-and their search live in the separate database service (Isnad_v1), reached through its API
+and their search live in the separate database service (Isnad_Database), reached through its API
 with SITE_API_KEY; the chat model is called through OpenRouter.
 
   /             the page (search + chat), or the maintenance page
