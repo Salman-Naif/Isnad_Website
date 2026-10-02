@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% macro icon(name, cls="icon") %}<svg class="{{ cls }}" aria-hidden="true"><use href="#i-{{ name }}"/></svg>{% endmacro %}
+
+{% block body %}
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/" aria-label="إسناد — الصفحة الرئيسية">
+      <span class="logo-mark" aria-hidden="true">{{ icon("link") }}</span>
+      <span>
+        <span class="brand-name">إسناد</span>
+        <span class="brand-sub">التحقق من الأحاديث والاقتباسات</span>
+      </span>
+    </a>
+  </div>
+</header>
+
+{% if config.announcement %}
+<div class="announcement" role="status">
+  <div class="container announcement-inner">{{ icon("megaphone") }}<span>{{ config.announcement }}</span></div>
+</div>
+{% endif %}
+
+<main class="container main">
+  <section class="hero">
+    <h1 class="hero-title">تحقّق من حديث أو اقتباس</h1>
+    <p class="hero-sub">اكتب النص بأي صياغة، ونطابقه دلاليًا مع المصادر المعتمدة، ونعرض الحكم منسوبًا لقائله مع السند.</p>
+  </section>
+
+  {% if config.search_enabled %}
+  <form id="search-form" class="card search-card" novalidate>
+    <!-- Verify one text, or find the hadiths about an idea -->
+    <div class="mode-switch" role="group" aria-label="نوع البحث">
+      <button type="button" class="mode" data-mode="verify" aria-pressed="true">{{ icon("check", "icon sm") }}<span>تحقّق من نص</span></button>
+      <button type="button" class="mode" data-mode="explore" aria-pressed="false">{{ icon("search", "icon sm") }}<span>ابحث بالمعنى</span></button>
+    </div>
+    <label for="query" class="sr-only">النص المراد التحقق منه</label>
+    <textarea id="query" rows="4" maxlength="2000" placeholder="اكتب الحديث أو الاقتباس هنا…" required></textarea>
+    <div class="search-footer">
+      <span id="query-count" class="muted small">0 / 2000</span>
+      <button id="verify-btn" type="submit" class="btn primary">{{ icon("search") }}<span id="verify-label">تحقّق</span></button>
+    </div>
+    <p id="status" class="alert" role="status" hidden></p>
+  </form>
+  {% else %}
+  <div class="card notice">{{ icon("info") }}<span>البحث متوقف مؤقتًا، يرجى المحاولة لاحقًا.</span></div>
+  {% endif %}
+
+  <!-- Result: verdict, best match with similarity and match type, the differing words, ruling and
+       isnad tree, then other matches -->
+  <section id="result" class="card result" aria-live="polite" hidden>
+    <div id="verdict" class="verdict">
+      <span id="verdict-icon" class="verdict-icon"></span>
+      <strong id="verdict-text"></strong>
+    </div>
+
+    <div id="best-match" hidden>
+      <blockquote id="matched-text" class="matched-text"></blockquote>
+      <div class="similarity">
+        <span class="muted small">نسبة التشابه</span>
+        <span class="meter" aria-hidden="true"><span id="similarity-bar"></span></span>
+        <strong id="similarity-text"></strong>
+      </div>
+      <p class="match-info small">
+        <span id="match-type" class="match-type"></span>
+        <span id="word-overlap" class="muted"></span>
+      </p>
+      <div id="shubha-block" hidden>
+        <h2 class="block-title">{{ icon("alert", "icon sm") }} موضع الشبهة</h2>
+        <p id="shubha-text" class="shubha-text"></p>
+        <p class="muted small">الكلمات المظلّلة في نصك لا ترد في النص الموثّق أعلاه.</p>
+      </div>
+      <dl id="details" class="details"></dl>
+      <div id="sanad-block" hidden>
+        <h2 class="block-title">{{ icon("layers", "icon sm") }} شجرة الإسناد</h2>
+        <p id="sanad-note" class="muted small sanad-note" hidden></p>
+        <div id="sanad-tree" class="isnad-tree" role="group" aria-label="شجرة الإسناد من النبي ﷺ إلى مصنّف الكتاب"></div>
+      </div>
+    </div>
+
+    <details id="other-matches" class="other-matches" hidden>
+      <summary>نصوص أخرى مشابهة</summary>
+      <ul id="other-list"></ul>
+    </details>
+  </section>
+
+  <!-- Search by meaning: the hadiths about the visitor's idea, closest first -->
+  <section id="explore" class="card explore" aria-live="polite" hidden>
+    <h2 class="card-title">أحاديث في هذا المعنى</h2>
+    <p id="explore-summary" class="muted small"></p>
+    <ol id="explore-list" class="explore-list"></ol>
+  </section>
+
+  {% if config.chat_enabled %}
+  <section id="chat" class="card chat">
+    <div class="chat-head">
+      <span class="chat-icon">{{ icon("message") }}</span>
+      <div>
+        <h2 class="card-title">اسأل عن حديث</h2>
+        <p class="muted small">مساعد آلي مدعوم بالذكاء الاصطناعي: يجيب من المصادر المعتمدة فقط، وينسب كل حكم لقائله، وقد يخطئ؛ فراجع النصوص المعروضة مع كل إجابة.</p>
+      </div>
+    </div>
+    <div id="chat-log" class="chat-log" aria-live="polite">
+      <p id="chat-empty" class="chat-empty muted">ابحث عن نص أولًا ثم اسأل عنه، أو اكتب سؤالك مباشرة.</p>
+    </div>
+    <!-- Ready questions: about the text just searched, or general ones before any search -->
+    <div id="chat-suggestions" class="chat-suggestions" aria-label="أسئلة مقترحة"></div>
+    <form id="chat-form" class="chat-form" novalidate>
+      <label for="chat-input" class="sr-only">سؤالك</label>
+      <input id="chat-input" type="text" maxlength="1000" autocomplete="off" placeholder="مثال: ما حكم هذا الحديث؟ ومن رواه؟">
+      <button id="chat-btn" type="submit" class="btn primary icon-only" aria-label="إرسال">{{ icon("send") }}</button>
+    </form>
+  </section>
+  {% else %}
+  <div class="card notice">{{ icon("info") }}<span>الحوار متوقف مؤقتًا، يرجى المحاولة لاحقًا.</span></div>
+  {% endif %}
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>الأحكام منسوبة لقائليها من المحدّثين كما وردت في المصادر المعتمدة. «إسناد» أداة مدعومة بالذكاء الاصطناعي، وليست مفتيًا ولا بديلًا عن أهل العلم.</p>
+    <details class="footer-privacy">
+      <summary>الخصوصية</summary>
+      <p>لا نطلب اسمًا ولا بريدًا ولا نحفظ عنوان جهازك. نحفظ نص البحث والسؤال، ومعرّفًا عشوائيًا مجهولًا من ملف تعريف (cookie) لا يُخزَّن إلا بعد تجزئته (hash)، لإحصاءات الاستخدام فقط. يُرسل نص البحث والسؤال إلى OpenRouter لمعالجته بنماذج الذكاء الاصطناعي، فلا تكتب فيه بيانات شخصية.</p>
+    </details>
+    <p>مشروع فريق إسناد (Isnad) المشارك في تحدي الذكاء الاصطناعي في خدمة المحتوى الإسلامي: سلمان نايف المحيسن، نوت عبدالعزيز الجهني.</p>
+    <p>© فريق إسناد (Isnad)</p>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/app.js').path }}?v={{ asset_version }}"></script>
+{% endblock %}

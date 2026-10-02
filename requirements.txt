@@ -1,0 +1,17 @@
+# Python 3.11.9
+
+# Server and page
+fastapi==0.141.1
+uvicorn[standard]==0.54.0
+jinja2==3.1.6
+
+# Settings
+pydantic==2.13.5
+pydantic-settings==2.15.0
+python-dotenv==1.2.3
+
+# Database service API (Isnad_v1)
+httpx==0.28.1
+
+# Chat model via OpenRouter (OpenAI-compatible client)
+openai==1.59.7

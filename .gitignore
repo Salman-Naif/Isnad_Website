@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Environment and secrets — also copies a browser renames on download: "env (1)", ".env (2)", env.txt
+.env
+*.env
+.env*
+env
+env *
+env.*
+!.env.example
+
+# Editor and OS files
+.vscode/
+.idea/
+.claude/
+.DS_Store
+Thumbs.db
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local tools
+.ruff_cache/
+coverage.xml

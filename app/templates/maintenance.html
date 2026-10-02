@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}إسناد — تحت الصيانة{% endblock %}
+{% block body_class %}maintenance-page{% endblock %}
+
+{% block body %}
+<main class="maintenance">
+  <div class="maintenance-card">
+    <span class="logo-mark large" aria-hidden="true"><svg class="icon"><use href="#i-tool"/></svg></span>
+    <h1>إسناد</h1>
+    <p>{{ config.maintenance_message }}</p>
+  </div>
+  <p class="maintenance-footer">© فريق إسناد (Isnad)</p>
+</main>
+{% endblock %}
