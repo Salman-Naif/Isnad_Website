@@ -6,8 +6,8 @@ outputs, and its safety test questions.
 
 ## Scope
 
-Isnad verifies hadiths and quotes attributed to the Prophet ﷺ against nine books of hadith, and
-answers questions about the texts it finds. It is not a mufti and gives no rulings of its own: a
+Isnad verifies hadiths and quotes attributed to the Prophet ﷺ against eight books of hadith
+(about 60,000 hadiths, from edited printed editions), and answers questions about the texts it finds. It is not a mufti and gives no rulings of its own: a
 ruling shown is always a scholar's, as the source records it. What it holds is listed in the
 database repository's
 [`docs/DATA_SOURCES.md`](https://github.com/Salman-Naif/Isnad_Database/blob/main/docs/DATA_SOURCES.md).

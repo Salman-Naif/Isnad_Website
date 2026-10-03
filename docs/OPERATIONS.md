@@ -56,7 +56,7 @@ Ibn Majah, 4,332 hadiths, in ~100 s) and a few cents of embeddings.
 | Embedding model | Run the same open model (Qwen3-Embedding-4B, Apache-2.0) on the server: same vectors, slower on CPU | Database service's README, "Embeddings" |
 | Railway | Any Docker host with a persistent disk (e.g. Render, suggested in the participant guide) | Both services are plain Dockerfiles; the Volume becomes a mounted disk |
 | The database service is down | The website answers with a clear message (503) instead of a wrong verdict | `app/services/database.py` |
-| Lost Volume | Rebuild: re-upload the nine books (~16 minutes, a few cents); originals can be downloaded from the dashboard beforehand | Database service's README, "Disk space" |
+| Lost Volume | Rebuild: re-upload the eight books (~25 minutes, ~$0.25); originals can be downloaded from the dashboard beforehand | Database service's README, "Disk space" |
 
 ## Maintenance and content review
 
