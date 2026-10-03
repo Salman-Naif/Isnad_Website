@@ -26,6 +26,7 @@ evidenced.
 | Document | What it covers |
 | --- | --- |
 | [`docs/CHALLENGE.md`](docs/CHALLENGE.md) | The challenge entry, team and contact, criteria → evidence, how to verify |
+| [`docs/AI.md`](docs/AI.md) | الذكاء الاصطناعي في البناء وفي المنتج: أدوات التطوير، والخوارزميات والنماذج داخل إسناد (بالعربية) |
 | [`docs/SAFETY.md`](docs/SAFETY.md) | Reliability and scientific safety: scope, content levels, anti-hallucination checks, limits |
 | [`docs/evaluation/`](docs/evaluation/) | The chat's evaluation set and its latest results |
 | [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | Running resources and costs, dependencies and alternatives, maintenance |
