@@ -44,8 +44,9 @@ under abuse. OpenRouter accounts can also be given a hard credit limit.
 
 ### One-time
 
-Indexing the nine books from the public datasets: about 16 minutes at the measured rate (Sunan
-Ibn Majah, 4,332 hadiths, in ~100 s) and a few cents of embeddings.
+Indexing the eight books (the Shamela editions, about 60,000 hadiths): about 25 minutes at the
+measured rate (Sunan Ibn Majah, 4,332 hadiths, in ~100 s; estimate) and about $0.25 of embeddings
+(12.3 M tokens, measured with `scripts/import_hadiths.py --estimate`).
 
 ## Critical dependencies and their alternatives
 
@@ -56,7 +57,7 @@ Ibn Majah, 4,332 hadiths, in ~100 s) and a few cents of embeddings.
 | Embedding model | Run the same open model (Qwen3-Embedding-4B, Apache-2.0) on the server: same vectors, slower on CPU | Database service's README, "Embeddings" |
 | Railway | Any Docker host with a persistent disk (e.g. Render, suggested in the participant guide) | Both services are plain Dockerfiles; the Volume becomes a mounted disk |
 | The database service is down | The website answers with a clear message (503) instead of a wrong verdict | `app/services/database.py` |
-| Lost Volume | Rebuild: re-upload the nine books (~16 minutes, a few cents); originals can be downloaded from the dashboard beforehand | Database service's README, "Disk space" |
+| Lost Volume | Rebuild: re-upload the eight books (~25 minutes, ~$0.25); originals can be downloaded from the dashboard beforehand | Database service's README, "Disk space" |
 
 ## Maintenance and content review
 
@@ -76,6 +77,6 @@ Monitoring: `/health` on both services (Railway health checks), the dashboard's 
 
 1. Ask the datasets' authors for permission, or move to sources with published terms that the
    reference pack lists (موسوعة الأحاديث النبوية — HadeethEnc, Dorar's hadith API); add
-   scholars' rulings from an edition that has them for all nine books.
+   scholars' rulings from an edition that has them for every book.
 2. A Sharia reviewer validates a sample of answers each month, using the evaluation set.
 3. Grow the evaluation set with the questions visitors actually ask (from the statistics).
