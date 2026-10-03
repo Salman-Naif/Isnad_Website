@@ -17,6 +17,7 @@ import json
 import re
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -75,22 +76,25 @@ def main() -> None:
     parser.add_argument("--url", required=True, help="the website, e.g. http://127.0.0.1:8000")
     parser.add_argument("--repeat", type=int, default=3, help="attempts per case")
     parser.add_argument("--cases", default="", help="only these case ids, comma-separated (no report)")
+    parser.add_argument("--workers", type=int, default=6, help="cases asked at the same time")
     args = parser.parse_args()
 
     spec = json.loads(CASES.read_text(encoding="utf-8"))
     only = {c.strip() for c in args.cases.split(",") if c.strip()}
-    rows = []
-    with httpx.Client(base_url=args.url.rstrip("/"), timeout=90) as client:
-        for case in spec["cases"]:
-            if only and case["id"] not in only:
-                continue
+    cases = [c for c in spec["cases"] if not only or c["id"] in only]
+
+    def run(case: dict) -> dict:
+        with httpx.Client(base_url=args.url.rstrip("/"), timeout=180) as client:
             attempts = [ask(client, case) for _ in range(args.repeat)]
-            passed = [meets(case["expect"], body) for body in attempts]
-            rows.append({**case, "passed": sum(passed), "attempts": len(passed),
-                         "answers": [b["answer"] for b in attempts],
-                         "warnings": [b["warnings"] for b in attempts]})
-            mark = "✓" if all(passed) else "✗"
-            print(f"{mark} {case['id']:<9} {sum(passed)}/{len(passed)}  {case['question']}", flush=True)
+        passed = [meets(case["expect"], body) for body in attempts]
+        mark = "✓" if all(passed) else "✗"
+        print(f"{mark} {case['id']:<9} {sum(passed)}/{len(passed)}  {case['question']}", flush=True)
+        return {**case, "passed": sum(passed), "attempts": len(passed),
+                "answers": [b["answer"] for b in attempts], "warnings": [b["warnings"] for b in attempts]}
+
+    # The model takes up to a minute an answer: cases are asked side by side, kept in order.
+    with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
+        rows = list(pool.map(run, cases))
 
     if only:
         for row in rows:  # a partial run is for trying a change: show the answers, keep the report
