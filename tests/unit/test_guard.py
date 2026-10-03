@@ -109,3 +109,24 @@ def test_a_ruling_quoted_from_the_narration_itself_passes():
 def test_the_prophets_salutation_matches_however_it_is_written():
     passages = ["عن عثمان قال رأيت رسول الله صلى الله عليه وسلم توضأ نحو وضوئي هذا"]
     assert guard.check_answer("قال: «رأيت رسول الله ﷺ توضأ نحو وضوئي هذا» [1].", passages, []) == []
+
+
+BUKHARI_ASIDE = ["قَالَ كِلاَكُمَا مُحْسِنٌ فَاقْرَآ ـ أَكْبَرُ عِلْمِي قَالَ ـ فَإِنَّ مَنْ كَانَ قَبْلَكُمُ اخْتَلَفُوا فَأَهْلَكَهُمْ"]
+
+
+def test_a_narrators_aside_may_be_left_out_of_a_quotation():
+    answer = "قال ﷺ: «كلاكما محسن فاقرآ فإن من كان قبلكم اختلفوا فأهلكهم» [1]."
+    assert guard.check_answer(answer, BUKHARI_ASIDE, []) == []
+
+
+@pytest.mark.parametrize("quote", [
+    "كلاكما فاقرآ فإن من كان قبلكم اختلفوا فأهلكهم",  # «محسن» — one word — left out
+    "كلاكما محسن فاقرآ فإن من كان قبلكم اتفقوا فأهلكهم",  # a word changed
+])
+def test_a_quotation_missing_a_single_word_or_changing_one_is_still_flagged(quote):
+    assert len(guard.check_answer(f"«{quote}» [1]", BUKHARI_ASIDE, [])) == 1
+
+
+def test_a_negation_can_never_be_left_out():
+    passages = ["قال رجل أوصني قال النبي صلى الله عليه وسلم لا تغضب فردد مرارا قال لا تغضب"]
+    assert len(guard.check_answer("«قال النبي صلى الله عليه وسلم فردد مرارا قال لا تغضب» [1]", passages, [])) == 1

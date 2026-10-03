@@ -83,6 +83,40 @@ def _contains(haystack: list[str], needle: list[str]) -> bool:
     return any(haystack[i:i + n] == needle for i in range(len(haystack) - n + 1))
 
 
+# A quotation may leave out a narrator's aside inside the Prophet's words («كلاكما محسن فاقرآ
+# ـ أكبر علمي قال ـ فإن من كان قبلكم…»), as quoting a hadith usually does: a run of 2–6 words,
+# at most twice. Never a single word, nor a run holding a negation — that changes the meaning.
+_ASIDE = range(2, 7)
+MAX_ASIDES = 2
+_NEGATIONS = {"لا", "ولا", "فلا", "لم", "ولم", "فلم", "لن", "ما", "ليس", "غير", "الا", "الي"}
+
+
+def _quoted_from(haystack: list[str], needle: list[str]) -> bool:
+    """`needle` appears in `haystack` word for word, or with a narrator's aside left out."""
+    if _contains(haystack, needle):
+        return True
+    for start in (i for i, w in enumerate(haystack) if w == needle[0]):
+        if _matches_with_asides(haystack, start, needle, MAX_ASIDES):
+            return True
+    return False
+
+
+def _matches_with_asides(haystack: list[str], i: int, needle: list[str], asides: int) -> bool:
+    j = 0
+    while j < len(needle) and i < len(haystack) and haystack[i] == needle[j]:
+        i, j = i + 1, j + 1
+    if j == len(needle):
+        return True
+    if asides == 0 or i >= len(haystack):
+        return False
+    for skip in _ASIDE:
+        gap = haystack[i:i + skip]
+        if len(gap) == skip and not _NEGATIONS & set(gap) and _matches_with_asides(
+                haystack, i + skip, needle[j:], asides - 1):
+            return True
+    return False
+
+
 def is_refusal(answer: str) -> bool:
     """A fixed answer or a referral: it rests on no passage, so none is shown with it."""
     return any(marker in answer for marker in REFUSAL_MARKERS) and not _CITATION.search(answer)
@@ -103,7 +137,7 @@ def check_answer(answer: str, passages: list[str], own_texts: list[str], rulings
     for match in _QUOTES.finditer(answer):
         quoted = next(g for g in match.groups() if g is not None)
         words = _words(quoted)
-        if len(words) >= MIN_QUOTE_WORDS and not any(_contains(s, words) for s in sources):
+        if len(words) >= MIN_QUOTE_WORDS and not any(_quoted_from(s, words) for s in sources):
             shown = quoted if len(quoted) <= 80 else quoted[:79] + "…"
             warnings.append(f"ورد في الإجابة نص لم نجده بلفظه في المصادر: «{shown}» — لا تعتمد عليه.")
 
