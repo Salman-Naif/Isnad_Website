@@ -114,7 +114,7 @@ def test_the_site_key_never_reaches_the_browser(visitor):
         assert SITE_KEY not in visitor.get(path).text
 
 
-# Real narrations as the Hadith-Data-Sets CSV files hold them: the chain inside the text.
+# Real narrations as a CSV collection holds them: the chain inside the text.
 BUKHARI_CSV = (
     "Sahih Bukhari\n"
     "حدثنا الحميدي عبد الله بن الزبير قال حدثنا سفيان قال حدثنا يحيى بن سعيد الأنصاري قال أخبرني محمد بن "

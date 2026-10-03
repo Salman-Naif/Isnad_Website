@@ -77,10 +77,8 @@ most of its words; a saying that merely sounds like one shares almost none with 
 on (in a search over 50,000 hadith vectors, «صوموا تصحوا» landed on an unrelated hadith at 0.73 with
 no word in common). Similarity alone could not tell them apart.
 
-Measured on the four books (Bukhari, Muslim, Tirmidhi, Ibn Majah — from the
-[Hadith-Data-Sets](https://github.com/abdelrahmaan/Hadith-Data-Sets) and
-[hadith-json](https://github.com/AhmedBaset/hadith-json) datasets; see the database repo's
-`docs/DATA_SOURCES.md`), searched by the database service (`qwen/qwen3-embedding-4b`, 1024
+Measured on the four books (Bukhari, Muslim, Tirmidhi, Ibn Majah — sources in the database
+repo's `docs/DATA_SOURCES.md`), searched by the database service (`qwen/qwen3-embedding-4b`, 1024
 dimensions, query instruction, literal-quote index):
 
 | Query                                                        | Verdict reached                         |

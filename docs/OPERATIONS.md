@@ -44,9 +44,8 @@ under abuse. OpenRouter accounts can also be given a hard credit limit.
 
 ### One-time
 
-Indexing the eight books (the Shamela editions, about 60,000 hadiths): about 25 minutes at the
-measured rate (Sunan Ibn Majah, 4,332 hadiths, in ~100 s; estimate) and about $0.25 of embeddings
-(12.3 M tokens, measured with `scripts/import_hadiths.py --estimate`).
+Indexing the eight Shamela editions: about 16 minutes at the measured rate (Sunan
+Ibn Majah, 4,332 hadiths, in ~100 s) and a few cents of embeddings.
 
 ## Critical dependencies and their alternatives
 
@@ -75,8 +74,8 @@ Monitoring: `/health` on both services (Railway health checks), the dashboard's 
 
 ## Next steps after the challenge
 
-1. Ask the datasets' authors for permission, or move to sources with published terms that the
-   reference pack lists (موسوعة الأحاديث النبوية — HadeethEnc, Dorar's hadith API); add
-   scholars' rulings from an edition that has them for every book.
+1. Ask Shamela and the publishers (مؤسسة الرسالة for Musnad Ahmad) for permission to serve
+   their editions' texts and rulings publicly; add Sunan al-Darimi, and rulings for the books
+   whose editions record none (Bukhari, Muslim, al-Nasa'i, the Muwatta).
 2. A Sharia reviewer validates a sample of answers each month, using the evaluation set.
 3. Grow the evaluation set with the questions visitors actually ask (from the statistics).
