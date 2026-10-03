@@ -39,16 +39,24 @@ database repository's
    some hadith. Passages less similar to the question than `CHAT_MIN_SIMILARITY` (0.56) are not
    given to the model; with none left, a fixed answer is given and the model is not called.
    Measured on the live database: questions on hadith topics scored 0.59–0.83, questions outside
-   the scope 0.38–0.68 — the gate stops about half of these, the prompt the rest.
-2. **The prompt** (`app/services/rag.py`). Thirteen rules from the standard above, which no
+   the scope 0.38–0.68 — the gate stops about half of these, the prompt the rest. A chain that
+   ends «… بمثله» or «بهذا الحديث» is left out too: it points to a hadith elsewhere in its book
+   without its words, and given alone the model attributed it to the wrong hadith («رواه مسلم
+   عن عائشة» for a hadith Muslim has from ʿUmar only).
+2. **The prompt** (`app/services/rag.py`). Thirteen rules from the standard above and an order for the answer, which no
    request of the visitor changes; a fixed sentence for anything outside the scope; temperature
    0. Questions about the asker's own case are marked by a fixed detector
-   (`app/services/guard.py`), outside the visitor's words.
+   (`app/services/guard.py`), outside the visitor's words. Each hadith comes with its
+   attribution ready — «رواه البخاري في صحيحه عن عمر بن الخطاب», the book from the database and
+   the companion from the chain itself — so the answer names the book and the narrator, never
+   «according to the sources»; it gives the hadith's words, then its meaning, then its ruling.
 3. **The answer check** (`app/services/guard.py`), which does not trust the model:
    - every quotation of four words or more must be found word for word (ignoring diacritics and
      letter forms) in the passages given, or be the visitor's own text quoted back;
    - every citation [n] must point to a passage that was given;
-   - an answer that states something must cite at least one passage.
+   - an answer that states something must cite at least one passage;
+   - a ruling the answer gives («حديث صحيح ثابت») must be one recorded with the passages or in
+     their words («قال أبو عيسى: حديث حسن صحيح») — never the model's own.
 
    What fails is shown to the visitor under the answer («ورد في الإجابة نص لم نجده بلفظه في
    المصادر… لا تعتمد عليه»); it is never hidden. A refusal or referral comes without passages.
