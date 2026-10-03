@@ -16,6 +16,7 @@ page can leave out the passages, which are not what such an answer rests on.
 """
 
 import re
+import unicodedata
 
 from app.services.isnad import normalize
 
@@ -45,12 +46,34 @@ def is_personal_case(question: str) -> bool:
     return bool(_PERSONAL_CASE.search(question))
 
 
+# A chain that ends «… بمثله» / «بهذا الحديث»: the compiler gives another route of the hadith
+# before it in his book, without its words. Alone, it can't be said which hadith it is — given
+# to the model, «رواه مسلم عن عائشة» was attributed to a hadith Muslim has from ʿUmar only.
+# Matched on the words as normalize() leaves them (no diacritics, «إ» → «ا», «ة» → «ه»).
+_REFERS_BACK = re.compile(
+    r"(?:بمثله|مثله|بنحوه|نحوه|بمعناه|بهذا الحديث|بهذا الاسناد|باسناده|بمثل حديث \S+(?: \S+){0,3})$"
+)
+
+
+def refers_back(text: str) -> bool:
+    """A chain without a text of its own, pointing to a hadith elsewhere in its book."""
+    tail = " ".join(w for w in (normalize(word) for word in text[-150:].split()) if w)
+    return bool(_REFERS_BACK.search(tail))
+
+
 MIN_QUOTE_WORDS = 4
+# A ruling stated about a hadith (not the title «صحيح البخاري»), matched on normalize()d words.
+_GRADING = re.compile(
+    r"(?:حديث|اسناده|اسناد|هذا الحديث)\s+((?:صحيح|حسن|ضعيف|موضوع|منكر|ثابت)(?:\s+(?:صحيح|غريب|ثابت))?)"
+)
 _QUOTES = re.compile(r"«([^«»]+)»|\"([^\"]+)\"|“([^”]+)”")
 _CITATION = re.compile(r"\[(\d+)\]")
 
 
 def _words(text: str) -> list[str]:
+    # «ﷺ» is one character for four words: expanded before splitting, so a quotation that
+    # writes «ﷺ» matches a narration that spells out «صلى الله عليه وسلم», and the reverse.
+    text = unicodedata.normalize("NFKC", text)
     return [w for w in (normalize(word) for word in text.split()) if w]
 
 
@@ -65,11 +88,12 @@ def is_refusal(answer: str) -> bool:
     return any(marker in answer for marker in REFUSAL_MARKERS) and not _CITATION.search(answer)
 
 
-def check_answer(answer: str, passages: list[str], own_texts: list[str]) -> list[str]:
+def check_answer(answer: str, passages: list[str], own_texts: list[str], rulings: list[str] = ()) -> list[str]:
     """Problems found in the answer, in Arabic for the visitor (empty when it holds up).
 
     `passages` are the texts given to the model, numbered from 1 in this order; `own_texts`
-    are the visitor's question and searched text, which the answer may quote back.
+    are the visitor's question and searched text, which the answer may quote back; `rulings`
+    are the rulings recorded with the passages (and their scholars).
     """
     if is_refusal(answer):
         return []
@@ -88,6 +112,13 @@ def check_answer(answer: str, passages: list[str], own_texts: list[str]) -> list
     if wrong:
         numbers = "، ".join(f"[{n}]" for n in wrong)
         warnings.append(f"أشارت الإجابة إلى نص غير موجود في المصادر المعروضة: {numbers}.")
+    # A grading the answer gives («حديث صحيح ثابت») must be one recorded with the passages or in
+    # their text («قال أبو عيسى: حديث حسن صحيح») — never the model's own.
+    recorded = sources + [_words(r) for r in rulings if r]
+    for match in _GRADING.finditer(" ".join(_words(answer))):
+        if not any(_contains(s, _words(match.group(1))) for s in recorded):
+            warnings.append(f"ذكرت الإجابة حكمًا («{match.group()}») لم يرد في المصادر — الحكم على الحديث لأهل العلم.")
+            break
     if passages and not cited:
         warnings.append("لم تُسنِد الإجابة كلامها إلى نص من المصادر؛ راجع النصوص المعروضة قبل الاعتماد عليها.")
     return warnings

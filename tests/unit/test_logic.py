@@ -113,7 +113,7 @@ def test_answer_sends_system_prompt_history_subject_and_context(monkeypatch):
     assert messages[1:3] == history
     assert messages[3]["role"] == "user"
     assert "«إنما الأعمال بالنيات»" in messages[3]["content"]
-    assert "[1] النص: إنما الأعمال بالنيات" in messages[3]["content"]
+    assert "الأحاديث:\n[1] العزو: ورد في البخاري\nالنص: إنما الأعمال بالنيات" in messages[3]["content"]
     assert messages[3]["content"].endswith("السؤال: ما حكمه؟")
     assert call["extra_body"] == {"reasoning": {"enabled": False}}
     assert call["temperature"] <= 0.3
@@ -153,7 +153,7 @@ def test_client_is_created_once_with_no_retries(monkeypatch):
 
 def test_format_context_numbers_every_passage():
     text = rag_module.format_context([PASSAGE, PASSAGE.model_copy(update={"hukm": None, "sanad": []})])
-    assert text.startswith("[1] النص:") and "\n\n[2] النص:" in text
+    assert text.startswith("[1] ") and "\n\n[2] " in text and text.count("النص:") == 2
     assert text.count("الحكم:") == 1
 
 

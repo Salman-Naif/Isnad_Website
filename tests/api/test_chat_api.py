@@ -160,3 +160,12 @@ def test_the_stream_reports_the_check_before_done(client, db, rag):
     _, events = stream(client)
     check = next(e for e in events if e["type"] == "check")
     assert len(check["warnings"]) == 2 and check["refused"] is False  # unsourced quote, citation [7]
+
+
+def test_a_chain_without_its_own_text_is_not_given_to_the_model(client, db, rag):
+    """«… عن عائشة عن النبي ﷺ بمثله» points to a hadith elsewhere in the book: given alone, the
+    model attributed the wrong hadith to ʿAisha."""
+    db.matches = [HADITH, HADITH.model_copy(update={
+        "id": "m5", "text": "حدثنا هشام بن عروة عن أبيه عن عائشة عن النبي صلى الله عليه وسلم بمثله ."})]
+    ask(client)
+    assert [c.id for c in rag.calls[0]["contexts"]] == [HADITH.id]

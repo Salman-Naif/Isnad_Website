@@ -122,15 +122,17 @@ text). It stays within its scope and on the sources in three layers — details 
 in [`docs/SAFETY.md`](docs/SAFETY.md):
 
 1. **Retrieval gate** — passages less similar to the question than `CHAT_MIN_SIMILARITY` (0.56)
-   are not given to the model; with none left, a fixed answer says the sources hold nothing on
-   it, and the model isn't called.
+   are not given to the model, nor chains that only point to a hadith elsewhere («… بمثله»);
+   with none left, a fixed answer says the sources hold nothing on it, and the model isn't called.
 2. **The prompt** — the rules of the challenge's reference pack: answer from the passages only,
    quote them word for word and cite each ([1], [2]…), never make up a hadith or a ruling, no
    personal fatwa (refer to a qualified scholar), refuse anything outside the scope with a fixed
-   sentence, say it is an AI tool. Temperature 0.
+   sentence, say it is an AI tool. Each hadith is named by its book and narrator, ready-made
+   from the data («رواه البخاري في صحيحه عن عمر بن الخطاب رضي الله عنه»), never «according to
+   the sources»: the answer gives the hadith, its meaning, then its ruling. Temperature 0.
 3. **The answer check** — every quotation in the answer is compared word for word with the
-   passages, every citation with the passages given; what fails is shown to the visitor under
-   the answer. A refusal comes without passages.
+   passages, every citation with the passages given, every ruling with the rulings recorded;
+   what fails is shown to the visitor under the answer. A refusal comes without passages.
 
 The chat is evaluated on a fixed set of cases (the reference pack's safety questions, made-up
 hadiths, out-of-scope and rule-breaking requests), three attempts each:

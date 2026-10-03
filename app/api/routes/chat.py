@@ -61,14 +61,16 @@ def _contexts(db: DatabaseClient, payload: ChatRequest) -> list[Match]:
     except DatabaseError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
     # Only passages that are about the question: the closest text to «ما عاصمة فرنسا؟» is still
-    # some hadith, and given to the model it invites an answer the sources don't support.
-    return [m for m in found if m.similarity >= settings.chat_min_similarity]
+    # some hadith, and given to the model it invites an answer the sources don't support. Nor a
+    # chain ending «بمثله»: without the text it points to, it can't be told which hadith it is.
+    return [m for m in found if m.similarity >= settings.chat_min_similarity and not guard.refers_back(m.text)]
 
 
 def _check(answer: str, contexts: list[Match], payload: ChatRequest) -> tuple[list[str], bool]:
     """(warnings about the answer, whether it is a refusal resting on no passage)."""
     own = [t for t in (payload.question, payload.context_query) if t.strip()]
-    return guard.check_answer(answer, [m.text for m in contexts], own), guard.is_refusal(answer)
+    rulings = [f"{m.hukm or ''} {m.mohaddith or ''}" for m in contexts]
+    return guard.check_answer(answer, [m.text for m in contexts], own, rulings), guard.is_refusal(answer)
 
 
 def _sources(contexts: list[Match]) -> list[str]:

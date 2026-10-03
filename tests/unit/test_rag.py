@@ -6,7 +6,7 @@ from tests.conftest import HADITH
 
 def test_context_block_carries_ruling_sanad_and_source():
     block = format_context([HADITH])
-    assert "[1] النص: إنما الأعمال بالنيات" in block
+    assert "[1] العزو: رواه البخاري في صحيحه عن عمر بن الخطاب\nالنص: إنما الأعمال بالنيات" in block
     assert "الحكم: صحيح" in block
     assert "السند: النبي ﷺ (المصدر) > عمر بن الخطاب (صحابي)" in block
     assert "المصدر: صحيح البخاري" in block
@@ -52,3 +52,21 @@ def test_the_model_is_asked_to_cite_passages_by_number():
 
 def test_stream_without_passages_answers_without_the_model():
     assert list(RAGService().stream("سؤال", contexts=[])) == [NO_CONTEXT_ANSWER]
+
+
+def test_a_hadith_is_attributed_to_its_book_and_companion():
+    """The model names the book and the narrator («رواه مسلم في صحيحه عن أبي هريرة»), never
+    «according to the sources»: the attribution is given to it ready, from the chain itself."""
+    from app.models.schemas import SanadNode
+    from app.services.rag import attribution
+
+    tree = SanadNode(name="النبي ﷺ", children=[SanadNode(name="أبي هريرة", children=[SanadNode(name="مسلم")])])
+    hadith = HADITH.model_copy(update={"source": "صحيح مسلم", "sanad": [], "sanad_tree": tree})
+    assert attribution(hadith) == "رواه مسلم في صحيحه عن أبي هريرة"
+    # A companion's own saying: the book only, no «عن»
+    saying = SanadNode(name="ابن عمر", children=[SanadNode(name="نافع")])
+    hadith = HADITH.model_copy(update={"source": "موطأ الإمام مالك", "sanad": [], "sanad_tree": saying})
+    assert attribution(hadith) == "رواه مالك في الموطأ"
+    # A book outside the nine
+    other = HADITH.model_copy(update={"source": "كتاب.pdf", "sanad": [], "sanad_tree": None})
+    assert attribution(other) == "ورد في كتاب.pdf"
