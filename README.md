@@ -104,8 +104,8 @@ without diacritics, as a visitor types it.
 | One word changed | distortion warning 51/64 | 38/64 |
 | A well-known hadith in a visitor's own words | warning (or same text) 17/24 | 22/24 first, 17/24 with the right verdict |
 | Not in the sources: modern sentences, proverbs, sayings wrongly attributed to the Prophet ﷺ | no match 29/30 | — |
-| A well-known hadith as it circulates in **English** | «a hadith with this meaning» 33/41, a distortion warning 5/41 | 38/41 |
-| An **English** saying not in the books («Seek knowledge even in China», proverbs) | no match 24/26 | — |
+| A well-known hadith as it circulates in **English** | «a hadith with this meaning» 35/41, a distortion warning 3/41 | 38/41 |
+| An **English** saying not in the books («Seek knowledge even in China», proverbs) | no match 25/26 | — |
 
 Where an altered quote misses, the query is usually a fragment from mid-narration (the matn as
 extracted from books that don't mark it) or the changed word is a common one; the hadith then
@@ -129,7 +129,7 @@ visitor can see what was looked for. Searching the English text directly scored 
 model can't be reached, and then only a match above `THRESHOLD_CROSS_LINGUAL` (0.75) is a warning.
 Renderings are cached; each new English search costs one short model call (~$0.00005).
 
-The two English sayings reported wrongly were each rendered as a hadith close in meaning
+The one English saying reported wrongly was rendered as a hadith close in meaning
 («Cleanliness is next to godliness» → «الطهور شطر الإيمان»); the page shows that rendering.
 
 When the same words are in several books, the best match is the first in the books' order
