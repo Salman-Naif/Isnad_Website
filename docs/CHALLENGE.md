@@ -23,8 +23,9 @@
   reworded version of a known one, or not in the sources. It shows the source, the ruling
   attributed to the scholar who gave it, the words that differ, and the chain of narration as a
   tree across the books. A chat assistant then answers questions about it from those texts only.
-- **Success is measured by:** the share of verifications that reach the right verdict (measured
-  on the four books, see the README's "Verification"), and the share of chat answers that stay
+- **Success is measured by:** the share of verifications that reach the right verdict (310
+  cases over the eight books: `docs/evaluation/verification.md`, and the README's "Verification"),
+  and the share of chat answers that stay
   on the sources, refuse what is out of scope, never make up a hadith and refer personal cases
   (`docs/evaluation/results.md`).
 
@@ -32,11 +33,11 @@
 
 | Criterion | Weight | Evidence |
 | --- | --- | --- |
-| Technical quality and use of AI | 25% | Semantic search (Qwen3 embeddings, 1024 dims) plus a literal-quote index; RAG chat with an answer check; isnad trees read from the narrations. 600+ automated tests at five levels (unit, integration, API, security, system), CI on every push. README "How it fits together"; Isnad_Database README; AI as a development tool and as product features: [`AI.md`](AI.md) |
+| Technical quality and use of AI | 25% | Semantic search (Qwen3 embeddings, 1024 dims) plus a literal-quote index; RAG chat with an answer check; isnad trees from the editions' narrator links, or read from the narrations' wording. 700+ automated tests at five levels (unit, integration, API, security, system), CI on every push. README "How it fits together"; Isnad_Database README; AI as a development tool and as product features: [`AI.md`](AI.md) |
 | Reliability and scientific safety | 15% | Rules of the reference pack's content levels in the prompt, a retrieval gate and a deterministic answer check (`docs/SAFETY.md`); rulings only from the sources; the evaluation set run 3× per case (`docs/evaluation/`) |
 | Innovation and added value | 15% | Verdicts that tell a distorted quote from an authentic one (word overlap + similarity), the differing words highlighted, isnad trees merged across books, every chat quotation verified word for word against the sources |
 | Beneficiary experience, communication and accessibility | 10% | Arabic, right-to-left, mobile-first; clear verdicts and next steps; keyboard and screen-reader labels; the AI nature and privacy stated on the page |
-| Benefit by the track's success criterion | 20% | Measured verdict accuracy (README "Verification"); chat evaluation results (`docs/evaluation/results.md`) |
+| Benefit by the track's success criterion | 20% | Measured verdict accuracy (`docs/evaluation/verification.md`: word for word 64/64, not in the sources 29/30); chat evaluation results (`docs/evaluation/results.md`) |
 | Realistic operation and continuation | 10% | Costs, alternatives to each critical dependency, maintenance roles (`docs/OPERATIONS.md`) |
 | Clear presentation and verifiability | 5% | Every claim above links to code, a test or a measurement; how to re-run them below |
 
@@ -47,6 +48,9 @@
 - **Chat evaluation:** start the site (README "Running locally"), then
   `python scripts/evaluate_chat.py --url http://127.0.0.1:8000 --repeat 3` — it writes
   `docs/evaluation/results.md`.
+- **Verdicts:** `python scripts/measure_verification.py --url <site>` — it writes
+  `docs/evaluation/verification.md` (each search counts in the statistics; `--pause 2` against the
+  live site, which allows 30 searches a minute).
 - **A verdict by hand:** search the same text on [الدرر السنية](https://dorar.net/hadith).
 
 ## Starting version and rights

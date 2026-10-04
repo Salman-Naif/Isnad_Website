@@ -35,7 +35,7 @@ OpenRouter's `/api/v1/models`). Usage figures are measured where marked, estimat
 | --- | --- | --- |
 | A chat question (DeepSeek V4 Flash) | $0.0115 / M input tokens, $1.28 / M output tokens | ~3,000 tokens in, ~400 out → **~$0.0006** (≈ 1,700 questions per US dollar) |
 | A search (verification) | `qwen3-embedding-4b`: $0.02 / M tokens | **~$0.0000004** |
-| Indexing a text book (JSON / CSV) | same | a few cents per book (measured on the four books) |
+| Indexing a text book (JSON / CSV) | same | ~$0.25 for all eight Shamela editions (12.3 M tokens) |
 | Indexing a scanned book (OCR) | Gemini 3 Flash + cross-check | ~$0.01 per page (measured) — only for scanned uploads |
 
 The website's rate limits cap the bill: 10 chat questions per visitor per minute and 60 for the
@@ -44,8 +44,8 @@ under abuse. OpenRouter accounts can also be given a hard credit limit.
 
 ### One-time
 
-Indexing the eight Shamela editions: about 16 minutes at the measured rate (Sunan
-Ibn Majah, 4,332 hadiths, in ~100 s) and a few cents of embeddings.
+Indexing the eight Shamela editions: about 15 minutes (measured: 63,815 hadiths, 114,941
+vectors), ~$0.25 of embeddings, and about 0.9 GB of the Volume.
 
 ## Critical dependencies and their alternatives
 
@@ -56,7 +56,7 @@ Ibn Majah, 4,332 hadiths, in ~100 s) and a few cents of embeddings.
 | Embedding model | Run the same open model (Qwen3-Embedding-4B, Apache-2.0) on the server: same vectors, slower on CPU | Database service's README, "Embeddings" |
 | Railway | Any Docker host with a persistent disk (e.g. Render, suggested in the participant guide) | Both services are plain Dockerfiles; the Volume becomes a mounted disk |
 | The database service is down | The website answers with a clear message (503) instead of a wrong verdict | `app/services/database.py` |
-| Lost Volume | Rebuild: re-upload the eight books (~25 minutes, ~$0.25); originals can be downloaded from the dashboard beforehand | Database service's README, "Disk space" |
+| Lost Volume | Rebuild: re-upload the eight books (~15 minutes, ~$0.25); originals can be downloaded from the dashboard beforehand | Database service's README, "Disk space" |
 
 ## Maintenance and content review
 
@@ -65,6 +65,7 @@ Ibn Majah, 4,332 hadiths, in ~100 s) and a few cents of embeddings.
 | Approve sources before upload; only approved editions go in | Each new source | The team's Sharia / content reviewer |
 | Review searches that found nothing and the chat's warnings (dashboard → statistics) | Weekly | Content reviewer |
 | Re-run the chat evaluation (`scripts/evaluate_chat.py`, report in `docs/evaluation/results.md`) | On any change to the prompt, the model or the sources | Technical lead |
+| Re-run the verdicts' measurement (`scripts/measure_verification.py`, report in `docs/evaluation/verification.md`) | On any change to the sources, the embedding model or the thresholds | Technical lead |
 | Dependency audit (pip-audit, Bandit, tests — CI on every push) | Every push; review advisories monthly | Technical lead |
 | Rotate `SITE_API_KEY` and the OpenRouter key | If ever exposed, and yearly | Technical lead |
 | Back up: download the originals from the dashboard | After uploads | Technical lead |

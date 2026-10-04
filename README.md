@@ -31,7 +31,7 @@ evidenced.
 | [`docs/evaluation/`](docs/evaluation/) | The chat's evaluation set and its latest results |
 | [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | Running resources and costs, dependencies and alternatives, maintenance |
 | [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) | Every component, service, model and data source, with its license |
-| Isnad_Database [`docs/DATA_SOURCES.md`](https://github.com/Salman-Naif/Isnad_Database/blob/main/docs/DATA_SOURCES.md) | The hadith books and datasets: titles, compilers, licenses, how they are used and checked |
+| Isnad_Database [`docs/DATA_SOURCES.md`](https://github.com/Salman-Naif/Isnad_Database/blob/main/docs/DATA_SOURCES.md) | The hadith books and their Shamela editions: titles, compilers, rulings and who gave them, rights, how they are used and checked |
 
 ## License
 
@@ -77,16 +77,25 @@ most of its words; a saying that merely sounds like one shares almost none with 
 on (in a search over 50,000 hadith vectors, «صوموا تصحوا» landed on an unrelated hadith at 0.73 with
 no word in common). Similarity alone could not tell them apart.
 
-Measured on the four books (Bukhari, Muslim, Tirmidhi, Ibn Majah — sources in the database
-repo's `docs/DATA_SOURCES.md`), searched by the database service (`qwen/qwen3-embedding-4b`, 1024
-dimensions, query instruction, literal-quote index):
+Measured on the eight Shamela editions (63,815 hadiths — the database repo's
+`docs/DATA_SOURCES.md`), through the site's own API with the database service's search
+(`qwen/qwen3-embedding-4b`, 1024 dimensions, query instruction, literal-quote index):
+`python scripts/measure_verification.py --url <site>` → [`docs/evaluation/verification.md`](docs/evaluation/verification.md).
+The hadiths were drawn at random, 8 from each book; the query is the first ten words of the matn,
+without diacritics, as a visitor types it.
 
-| Query                                                        | Verdict reached                         |
-| ------------------------------------------------------------ | --------------------------------------- |
-| A hadith's words, word for word (3+ words)                   | same text — every time (similarity 1.0) |
-| Two words missing, one word changed, or the first five words | distortion warning 77%                  |
-| A hadith in the visitor's own words                          | distortion warning 88%                  |
-| Not in the sources: modern sentences, proverbs, sayings wrongly attributed to the Prophet ﷺ | no match 97% (with a single 0.60 threshold: 43%) |
+| Query | Verdict reached | …with that hadith first |
+| --- | --- | --- |
+| A hadith's words, word for word | same text 64/64 | 64/64 |
+| Its first five words only | same text 59/64 | 59/64 |
+| Two words missing | distortion warning 59/64 | 48/64 |
+| One word changed | distortion warning 51/64 | 38/64 |
+| A well-known hadith in a visitor's own words | warning (or same text) 17/24 | 22/24 first, 17/24 with the right verdict |
+| Not in the sources: modern sentences, proverbs, sayings wrongly attributed to the Prophet ﷺ | no match 29/30 | — |
+
+Where an altered quote misses, the query is usually a fragment from mid-narration (the matn as
+extracted from books that don't mark it) or the changed word is a common one; the hadith then
+falls below the warning thresholds and the page says «no match» rather than claim a text.
 
 If the database's `EMBEDDING_MODEL` changes, recalibrate with real sources and set the
 thresholds below.
@@ -168,10 +177,14 @@ isnad_website/
 │   │   ├── database.py         # Client for the database service API
 │   │   ├── verification.py     # Similarity → verdict; one isnad tree for the books found
 │   │   ├── isnad.py            # Match type, the words that differ (شبهة), merging trees
-│   │   └── rag.py              # Chat model via OpenRouter
+│   │   ├── rag.py              # Chat model via OpenRouter
+│   │   └── guard.py            # Retrieval gate, personal cases, the answer check
 │   ├── templates/              # index · maintenance
 │   └── static/                 # CSS · JS
-├── docs/postman/               # Website and model tests for Postman
+├── docs/                       # CHALLENGE · AI · SAFETY · OPERATIONS · evaluation/ · postman/
+├── scripts/
+│   ├── evaluate_chat.py        # The chat's evaluation set → docs/evaluation/results.md
+│   └── measure_verification.py # The verdicts' measurement → docs/evaluation/verification.md
 ├── tests/
 │   ├── unit/ · integration/ · api/ · security/ · system/   # one folder per test level
 │   └── conftest.py             # fake database service and fake chat model
