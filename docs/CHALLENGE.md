@@ -4,6 +4,19 @@
 المحتوى الإسلامي** (The AI Challenge in Serving Islamic Content), organised by مؤسسة باذل الأهلية,
 2026.
 
+## At a glance
+
+| | |
+| --- | --- |
+| Live demo | https://isnadapplication-production.up.railway.app |
+| Code (public, MIT) | [Isnad_Website](https://github.com/Salman-Naif/Isnad_Website) — the public site and the chat · [Isnad_Database](https://github.com/Salman-Naif/Isnad_Database) — the sources, their search and the admin dashboard |
+| Hosting | Railway, two Docker services in one project: the website (public) and the database service (its dashboard only for the team's signed-in users), which keeps vectors, texts, settings and statistics on a persistent Volume. Every push to `main` is tested in CI and redeployed. |
+| How it works | A visitor's text → the database service finds it word for word (SQLite FTS5) or by meaning (embeddings in ChromaDB) → the website gives the verdict, the ruling with its scholar, the differing words and the isnad tree → the chat answers from the passages found only, and every quotation is checked against them |
+| Technologies | Python 3.11 · FastAPI · Jinja2 · ChromaDB · SQLite (FTS5) · OpenRouter: `qwen/qwen3-embedding-4b` (embeddings), `deepseek/deepseek-v4-flash-0731` (chat), Gemini (OCR of scanned books) · Docker · Railway · GitHub Actions |
+| Data | Eight books of hadith from their printed editions in المكتبة الشاملة (63,815 hadiths, rulings as the editions record them), checked against الدرر السنية — the database repo's `docs/DATA_SOURCES.md` |
+| Run it | Each README: "Running locally" (environment variables in `.env.example`, all listed under "Environment variables"), "Deploying to Railway", "Development and testing" |
+| Dashboard access | Not public. The team's system manager can create an account for a reviewer on request. |
+
 ## Team and contact
 
 | Member | Contact |

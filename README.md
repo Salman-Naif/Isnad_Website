@@ -58,6 +58,17 @@ Visitor ──► Isnad_Website (this repo) ──SITE_API_KEY──► Isnad_Da
   statistics, after the response is sent, so it never slows the visitor down. Visitors are
   counted with an anonymous random cookie; no IP address or personal data is sent.
 
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| Language | Python 3.11.9 |
+| Server and page | FastAPI + Jinja2; plain HTML, CSS and JavaScript (no framework), Arabic, right-to-left |
+| Chat model | `deepseek/deepseek-v4-flash-0731` on OpenRouter, through the OpenAI Python SDK |
+| Search | The database service's API: Qwen3 embeddings (`qwen/qwen3-embedding-4b`, 1024 dims) in ChromaDB, plus an SQLite FTS5 index for word-for-word quotes |
+| Hosting | Docker on Railway: this website and the database service, two services in one project |
+| Quality | pytest (unit → system), Ruff, Bandit, pip-audit, Postman/Newman, GitHub Actions CI |
+
 ## Verification
 
 The database returns the stored passages closest to the text, with a similarity score.
@@ -218,6 +229,9 @@ The website is a second service, next to the database service.
 No Volume is needed: the website stores nothing.
 
 ## Running locally (optional)
+
+Start the database service first (its README, "Running locally" — it listens on port 8000),
+then this site with `DATABASE_URL=http://127.0.0.1:8000` and the same `SITE_API_KEY` in `.env`:
 
 ```bash
 python -m venv .venv
