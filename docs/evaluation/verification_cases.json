@@ -1,12 +1,14 @@
 {
- "about": "Verification cases for the website's verdicts. The first 256 were drawn at random (seed 20261003), 8 hadiths from each of the eight Shamela editions: the first ten words of the hadith's matn, written without diacritics as a visitor types, and three changes of them. The rest were written by the team: well-known hadiths in a visitor's own words, and sayings that none of the eight books holds (modern sentences, proverbs, sayings wrongly attributed to the Prophet ﷺ).",
+ "about": "Verification cases for the website's verdicts. The first 256 were drawn at random (seed 20261003), 8 hadiths from each of the eight Shamela editions: the first ten words of the hadith's matn, written without diacritics as a visitor types, and three changes of them. The rest were written by the team: well-known hadiths in a visitor's own words, and sayings that none of the eight books holds (modern sentences, proverbs, sayings wrongly attributed to the Prophet ﷺ). English: well-known hadiths as they circulate in English (the expected Arabic phrases show which hadith is meant), and sayings in English that none of the eight books holds — searched through the Arabic rendering the site makes of them.",
  "kinds": {
   "exact": "the words as the book has them → «same text» (verified or found), with a hadith holding them first",
   "missing2": "two of the words left out → a distortion warning, the same hadith first (8 of its 10 words in it)",
   "changed1": "one word changed → a distortion warning, the same hadith first (8 of its 10 words in it)",
   "first5": "the first five words only → «same text», with a hadith holding them first",
   "own_words": "a hadith in a visitor's own words → a distortion warning (or «same text», where the words are one of the hadith's own wordings), with that hadith first",
-  "not_in_sources": "not in the books → «no match»"
+  "not_in_sources": "not in the books → «no match»",
+  "en_hadith": "a hadith as it circulates in English → «a hadith with this meaning» (or a distortion warning), with that hadith first",
+  "en_not_in_sources": "an English saying that is not in the books → «no match»"
  },
  "cases": [
   {
@@ -2689,6 +2691,499 @@
    "id": "n030",
    "kind": "not_in_sources",
    "query": "الجنة دار الأسخياء",
+   "expect": []
+  },
+  {
+   "id": "e001",
+   "kind": "en_hadith",
+   "query": "Actions are but by intentions",
+   "expect": [
+    "بالنيات",
+    "بالنيه"
+   ]
+  },
+  {
+   "id": "e002",
+   "kind": "en_hadith",
+   "query": "None of you truly believes until he loves for his brother what he loves for himself",
+   "expect": [
+    "لاخيه ما يحب لنفسه"
+   ]
+  },
+  {
+   "id": "e003",
+   "kind": "en_hadith",
+   "query": "The strong man is not the one who overcomes people by his strength, but the one who controls himself while angry",
+   "expect": [
+    "يملك نفسه عند الغضب"
+   ]
+  },
+  {
+   "id": "e004",
+   "kind": "en_hadith",
+   "query": "A Muslim is the one from whose tongue and hands other Muslims are safe",
+   "expect": [
+    "من لسانه ويده"
+   ]
+  },
+  {
+   "id": "e005",
+   "kind": "en_hadith",
+   "query": "Whoever believes in Allah and the Last Day should speak good or remain silent",
+   "expect": [
+    "خيرا او ليصمت",
+    "خيرا او ليسكت"
+   ]
+  },
+  {
+   "id": "e006",
+   "kind": "en_hadith",
+   "query": "Religion is sincere advice",
+   "expect": [
+    "الدين النصيحه"
+   ]
+  },
+  {
+   "id": "e007",
+   "kind": "en_hadith",
+   "query": "Do not get angry",
+   "expect": [
+    "لا تغضب"
+   ]
+  },
+  {
+   "id": "e008",
+   "kind": "en_hadith",
+   "query": "Whoever lies about me deliberately, let him take his seat in the Fire",
+   "expect": [
+    "فليتبوا مقعده من النار"
+   ]
+  },
+  {
+   "id": "e009",
+   "kind": "en_hadith",
+   "query": "The best of you are those who learn the Quran and teach it",
+   "expect": [
+    "من تعلم القران وعلمه"
+   ]
+  },
+  {
+   "id": "e010",
+   "kind": "en_hadith",
+   "query": "Smiling in the face of your brother is charity",
+   "expect": [
+    "تبسمك في وجه اخيك"
+   ]
+  },
+  {
+   "id": "e011",
+   "kind": "en_hadith",
+   "query": "Whoever takes a path seeking knowledge, Allah will make easy for him a path to Paradise",
+   "expect": [
+    "طريقا الي الجنه"
+   ]
+  },
+  {
+   "id": "e012",
+   "kind": "en_hadith",
+   "query": "Part of the perfection of one's Islam is leaving what does not concern him",
+   "expect": [
+    "ما لا يعنيه"
+   ]
+  },
+  {
+   "id": "e013",
+   "kind": "en_hadith",
+   "query": "Purity is half of faith",
+   "expect": [
+    "الطهور شطر الايمان"
+   ]
+  },
+  {
+   "id": "e014",
+   "kind": "en_hadith",
+   "query": "Allah does not look at your bodies or your forms, but He looks at your hearts",
+   "expect": [
+    "ينظر الي قلوبكم"
+   ]
+  },
+  {
+   "id": "e015",
+   "kind": "en_hadith",
+   "query": "The believer to the believer is like a building whose parts support one another",
+   "expect": [
+    "يشد بعضه بعضا"
+   ]
+  },
+  {
+   "id": "e016",
+   "kind": "en_hadith",
+   "query": "The most beloved deeds to Allah are the most consistent, even if they are small",
+   "expect": [
+    "وان قل"
+   ]
+  },
+  {
+   "id": "e017",
+   "kind": "en_hadith",
+   "query": "Paradise is surrounded by hardships and the Fire is surrounded by desires",
+   "expect": [
+    "حفت الجنه بالمكاره",
+    "حجبت النار بالشهوات",
+    "حفت النار بالشهوات"
+   ]
+  },
+  {
+   "id": "e018",
+   "kind": "en_hadith",
+   "query": "A person will be with those whom he loves",
+   "expect": [
+    "المرء مع من احب",
+    "انت مع من احببت"
+   ]
+  },
+  {
+   "id": "e019",
+   "kind": "en_hadith",
+   "query": "He who does not thank people does not thank Allah",
+   "expect": [
+    "يشكر الناس"
+   ]
+  },
+  {
+   "id": "e020",
+   "kind": "en_hadith",
+   "query": "The world is a prison for the believer and a paradise for the disbeliever",
+   "expect": [
+    "الدنيا سجن المؤمن"
+   ]
+  },
+  {
+   "id": "e021",
+   "kind": "en_hadith",
+   "query": "A good word is charity",
+   "expect": [
+    "الكلمه الطيبه صدقه"
+   ]
+  },
+  {
+   "id": "e022",
+   "kind": "en_hadith",
+   "query": "Make things easy and do not make them difficult, give glad tidings and do not drive people away",
+   "expect": [
+    "يسروا ولا تعسروا"
+   ]
+  },
+  {
+   "id": "e023",
+   "kind": "en_hadith",
+   "query": "Whoever cheats us is not one of us",
+   "expect": [
+    "فليس منا",
+    "فليس مني"
+   ]
+  },
+  {
+   "id": "e024",
+   "kind": "en_hadith",
+   "query": "Modesty brings nothing but good",
+   "expect": [
+    "الحياء لا ياتي الا بخير",
+    "الحياء خير كله"
+   ]
+  },
+  {
+   "id": "e025",
+   "kind": "en_hadith",
+   "query": "Fear Allah wherever you are, and follow up a bad deed with a good deed, it will wipe it out",
+   "expect": [
+    "السيئة الحسنة تمحها"
+   ]
+  },
+  {
+   "id": "e026",
+   "kind": "en_hadith",
+   "query": "The upper hand is better than the lower hand",
+   "expect": [
+    "اليد العليا خير من اليد السفلي"
+   ]
+  },
+  {
+   "id": "e027",
+   "kind": "en_hadith",
+   "query": "Whoever is not merciful to people, Allah will not be merciful to him",
+   "expect": [
+    "لا يرحم الناس",
+    "من لا يرحم لا يرحم"
+   ]
+  },
+  {
+   "id": "e028",
+   "kind": "en_hadith",
+   "query": "Islam is built upon five pillars",
+   "expect": [
+    "بني الاسلام علي خمس"
+   ]
+  },
+  {
+   "id": "e029",
+   "kind": "en_hadith",
+   "query": "Leave what makes you doubt for what does not make you doubt",
+   "expect": [
+    "دع ما يريبك"
+   ]
+  },
+  {
+   "id": "e030",
+   "kind": "en_hadith",
+   "query": "Supplication is worship",
+   "expect": [
+    "الدعاء هو العباده"
+   ]
+  },
+  {
+   "id": "e031",
+   "kind": "en_hadith",
+   "query": "Every innovation is misguidance",
+   "expect": [
+    "كل بدعه ضلاله"
+   ]
+  },
+  {
+   "id": "e032",
+   "kind": "en_hadith",
+   "query": "Allah is beautiful and He loves beauty",
+   "expect": [
+    "ان الله جميل يحب الجمال"
+   ]
+  },
+  {
+   "id": "e033",
+   "kind": "en_hadith",
+   "query": "There should be neither harming nor reciprocating harm",
+   "expect": [
+    "لا ضرر ولا ضرار"
+   ]
+  },
+  {
+   "id": "e034",
+   "kind": "en_hadith",
+   "query": "The one who guides to good is like the one who does it",
+   "expect": [
+    "الدال علي الخير كفاعله"
+   ]
+  },
+  {
+   "id": "e035",
+   "kind": "en_hadith",
+   "query": "Charity does not decrease wealth",
+   "expect": [
+    "ما نقصت صدقه من مال"
+   ]
+  },
+  {
+   "id": "e036",
+   "kind": "en_hadith",
+   "query": "Stay with your mother, for Paradise is beneath her feet",
+   "expect": [
+    "تحت رجليها"
+   ]
+  },
+  {
+   "id": "e037",
+   "kind": "en_hadith",
+   "query": "The best of you are those with the best character",
+   "expect": [
+    "احسنكم اخلاقا",
+    "احاسنكم اخلاقا"
+   ]
+  },
+  {
+   "id": "e038",
+   "kind": "en_hadith",
+   "query": "Whoever builds a mosque for Allah, Allah will build for him a house in Paradise",
+   "expect": [
+    "بني الله له"
+   ]
+  },
+  {
+   "id": "e039",
+   "kind": "en_hadith",
+   "query": "Prayer in congregation is twenty-seven times better than praying alone",
+   "expect": [
+    "بسبع وعشرين درجه"
+   ]
+  },
+  {
+   "id": "e040",
+   "kind": "en_hadith",
+   "query": "Seeking knowledge is an obligation upon every Muslim",
+   "expect": [
+    "طلب العلم فريضه علي كل مسلم"
+   ]
+  },
+  {
+   "id": "e041",
+   "kind": "en_hadith",
+   "query": "Tie your camel and trust in Allah",
+   "expect": [
+    "اعقلها وتوكل"
+   ]
+  },
+  {
+   "id": "x001",
+   "kind": "en_not_in_sources",
+   "query": "Seek knowledge even if you have to go to China",
+   "expect": []
+  },
+  {
+   "id": "x002",
+   "kind": "en_not_in_sources",
+   "query": "Love of one's homeland is part of faith",
+   "expect": []
+  },
+  {
+   "id": "x003",
+   "kind": "en_not_in_sources",
+   "query": "Cleanliness is next to godliness",
+   "expect": []
+  },
+  {
+   "id": "x004",
+   "kind": "en_not_in_sources",
+   "query": "Fast and you will be healthy",
+   "expect": []
+  },
+  {
+   "id": "x005",
+   "kind": "en_not_in_sources",
+   "query": "The ink of the scholar is more sacred than the blood of the martyr",
+   "expect": []
+  },
+  {
+   "id": "x006",
+   "kind": "en_not_in_sources",
+   "query": "Work for your world as if you will live forever, and work for your hereafter as if you will die tomorrow",
+   "expect": []
+  },
+  {
+   "id": "x007",
+   "kind": "en_not_in_sources",
+   "query": "Whoever knows himself knows his Lord",
+   "expect": []
+  },
+  {
+   "id": "x008",
+   "kind": "en_not_in_sources",
+   "query": "The differences of opinion among my nation are a mercy",
+   "expect": []
+  },
+  {
+   "id": "x009",
+   "kind": "en_not_in_sources",
+   "query": "The best of matters is the middle way",
+   "expect": []
+  },
+  {
+   "id": "x010",
+   "kind": "en_not_in_sources",
+   "query": "Be optimistic about good and you will find it",
+   "expect": []
+  },
+  {
+   "id": "x011",
+   "kind": "en_not_in_sources",
+   "query": "Religion is how you treat people",
+   "expect": []
+  },
+  {
+   "id": "x012",
+   "kind": "en_not_in_sources",
+   "query": "We have returned from the lesser jihad to the greater jihad",
+   "expect": []
+  },
+  {
+   "id": "x013",
+   "kind": "en_not_in_sources",
+   "query": "Whoever learns the language of a people is safe from their deceit",
+   "expect": []
+  },
+  {
+   "id": "x014",
+   "kind": "en_not_in_sources",
+   "query": "My Lord disciplined me and made my discipline excellent",
+   "expect": []
+  },
+  {
+   "id": "x015",
+   "kind": "en_not_in_sources",
+   "query": "People are asleep, and when they die they wake up",
+   "expect": []
+  },
+  {
+   "id": "x016",
+   "kind": "en_not_in_sources",
+   "query": "How do I cook rice with chicken in the oven",
+   "expect": []
+  },
+  {
+   "id": "x017",
+   "kind": "en_not_in_sources",
+   "query": "The stock market rose sharply today",
+   "expect": []
+  },
+  {
+   "id": "x018",
+   "kind": "en_not_in_sources",
+   "query": "Time is like a sword; if you do not cut it, it will cut you",
+   "expect": []
+  },
+  {
+   "id": "x019",
+   "kind": "en_not_in_sources",
+   "query": "A sound mind is in a sound body",
+   "expect": []
+  },
+  {
+   "id": "x020",
+   "kind": "en_not_in_sources",
+   "query": "Patience is the key to relief",
+   "expect": []
+  },
+  {
+   "id": "x021",
+   "kind": "en_not_in_sources",
+   "query": "God helps those who help themselves",
+   "expect": []
+  },
+  {
+   "id": "x022",
+   "kind": "en_not_in_sources",
+   "query": "Charity begins at home",
+   "expect": []
+  },
+  {
+   "id": "x023",
+   "kind": "en_not_in_sources",
+   "query": "Whoever sees the Prophet in a dream on a Friday will enter Paradise",
+   "expect": []
+  },
+  {
+   "id": "x024",
+   "kind": "en_not_in_sources",
+   "query": "Whoever forwards this message to ten people will hear good news today",
+   "expect": []
+  },
+  {
+   "id": "x025",
+   "kind": "en_not_in_sources",
+   "query": "Read Surah Al-Kahf on Friday night and all your sins will be forgiven, including the major ones",
+   "expect": []
+  },
+  {
+   "id": "x026",
+   "kind": "en_not_in_sources",
+   "query": "The best programming language for beginners is Python",
    "expect": []
   }
  ]

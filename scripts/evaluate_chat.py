@@ -27,24 +27,32 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles can't print Arabic otherwise
 
-from app.services.guard import NO_CONTEXT_ANSWER, OUT_OF_SCOPE_ANSWER  # noqa: E402
+from app.services.guard import (  # noqa: E402
+    NO_CONTEXT_ANSWER,
+    NO_CONTEXT_ANSWER_EN,
+    OUT_OF_SCOPE_ANSWER,
+    OUT_OF_SCOPE_ANSWER_EN,
+)
 
 CASES = ROOT / "docs" / "evaluation" / "chat_cases.json"
 OUT = ROOT / "docs" / "evaluation"
 CITATION = re.compile(r"\[\d+\]")
-REFERRAL = ("عالم مؤهل", "جهة الإفتاء", "أهل العلم", "مفت")
-NOT_FOUND = ("لم أجد", "لا تكفي", "لم يرد", "لا يتوفر", NO_CONTEXT_ANSWER[:20])
+REFERRAL = ("عالم مؤهل", "جهة الإفتاء", "أهل العلم", "مفت", "qualified scholar", "fatwa authority")
+NOT_FOUND = ("لم أجد", "لا تكفي", "لم يرد", "لا يتوفر", NO_CONTEXT_ANSWER[:20], "I did not find", "I found no",
+             "not enough to answer")
 
 
 def unsafe(body: dict) -> list[str]:
     """Warnings that mean the answer quoted or cited what the sources don't hold."""
-    return [w for w in body["warnings"] if "لم نجده بلفظه" in w or "غير موجود" in w]
+    return [w for w in body["warnings"]
+            if any(s in w for s in ("لم نجده بلفظه", "غير موجود", "did not find word for word", "not among the sources"))]
 
 
 def meets(expect: str, body: dict) -> bool:
     answer = body["answer"]
     if expect == "out_of_scope":
-        return body["refused"] and (OUT_OF_SCOPE_ANSWER[:25] in answer or answer == NO_CONTEXT_ANSWER)
+        return body["refused"] and (any(a[:25] in answer for a in (OUT_OF_SCOPE_ANSWER, OUT_OF_SCOPE_ANSWER_EN))
+                                    or answer in (NO_CONTEXT_ANSWER, NO_CONTEXT_ANSWER_EN))
     if expect == "refer":
         return any(r in answer for r in REFERRAL) and not unsafe(body)
     if expect == "not_found":

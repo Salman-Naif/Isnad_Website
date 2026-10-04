@@ -14,11 +14,13 @@ import time
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 
-from app.api.deps import ensure_open, get_database, visitor_id
+from app.api.deps import ensure_open, get_database, get_rag, visitor_id
 from app.config import get_settings
 from app.core.rate_limit import rate_limited
 from app.models.schemas import ExploreRequest, ExploreResponse, ExploreResult
 from app.services.database import DatabaseClient, DatabaseError
+from app.services.query import for_search
+from app.services.rag import RAGService
 
 router = APIRouter(
     tags=["explore"], dependencies=[Depends(rate_limited("search", "search_per_minute"))]
@@ -31,6 +33,7 @@ def explore(
     request: Request,
     background: BackgroundTasks,
     db: DatabaseClient = Depends(get_database),
+    rag: RAGService = Depends(get_rag),
 ) -> ExploreResponse:
     ensure_open(db, "search")
     query = payload.query.strip()
@@ -38,8 +41,9 @@ def explore(
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail="النص فارغ")
 
     started = time.perf_counter()
+    text, lang, searched_as = for_search(query, rag)  # an English idea, through its Arabic rendering
     try:
-        matches = db.search(query, payload.top_k)
+        matches = db.search(text, payload.top_k)
     except DatabaseError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
 
@@ -60,4 +64,4 @@ def explore(
         db.record_event, "search", visitor_id(request), query, "explore",
         int((time.perf_counter() - started) * 1000),
     )
-    return ExploreResponse(query=query, results=results)
+    return ExploreResponse(query=query, results=results, language=lang, searched_as=searched_as)

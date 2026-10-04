@@ -35,6 +35,7 @@ OpenRouter's `/api/v1/models`). Usage figures are measured where marked, estimat
 | --- | --- | --- |
 | A chat question (DeepSeek V4 Flash) | $0.0115 / M input tokens, $1.28 / M output tokens | ~3,000 tokens in, ~400 out → **~$0.0006** (≈ 1,700 questions per US dollar) |
 | A search (verification) | `qwen3-embedding-4b`: $0.02 / M tokens | **~$0.0000004** |
+| An English search, in addition | its Arabic rendering by the chat model (~150 tokens in, ~40 out), once per distinct text | **~$0.00005** |
 | Indexing a text book (JSON / CSV) | same | ~$0.25 for all eight Shamela editions (12.3 M tokens) |
 | Indexing a scanned book (OCR) | Gemini 3 Flash + cross-check | ~$0.01 per page (measured) — only for scanned uploads |
 

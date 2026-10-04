@@ -52,13 +52,15 @@ def test_prompt_injection_in_the_question_stays_a_user_message(client, db, rag):
 
 
 @pytest.mark.parametrize("payload", ["' OR 1=1 --", "<script>alert(1)</script>", "{{7*7}}", "${7*7}"])
-def test_hostile_queries_are_passed_on_as_plain_data(client, db, payload):
+def test_hostile_queries_are_passed_on_as_plain_data(client, db, rag, payload):
     db.matches = [Match(id="1", text=payload, similarity=0.9, kind="document")]
     res = client.post("/api/search", json={"query": payload})
     assert res.status_code == 200
     assert res.headers["content-type"].startswith("application/json")
     assert res.json()["query"] == payload and res.json()["results"][0]["text"] == payload
-    assert db.searches[0][0] == payload
+    # Searched as it is, or — written in Latin letters — handed to the translation as the
+    # visitor's message, never as an instruction
+    assert payload in (db.searches[0][0], *rag.translations)
 
 
 def test_page_escapes_dashboard_text(client, db):

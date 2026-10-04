@@ -12,6 +12,9 @@ class Verdict(StrEnum):
     VERIFIED = "verified"  # the same text as a structured hadith that carries a scholar's ruling
     FOUND = "found"  # the same text as a passage from an uploaded book, but no ruling attached
     DISTORTED = "distorted"  # resembles a known text with different wording
+    # An English text whose meaning is a hadith of the sources: never "the same text", since the
+    # visitor's words are not the hadith's
+    MEANING = "meaning"
     NO_MATCH = "no_match"
 
 
@@ -21,6 +24,7 @@ class MatchType(StrEnum):
     EXACT = "exact"  # word for word
     CLOSE = "close"  # the same text, a letter or a word apart
     REWORDED = "reworded"  # a known text in other words
+    MEANING = "meaning"  # the meaning of a known text, in another language
     NONE = "none"
 
 
@@ -116,6 +120,9 @@ class SearchResponse(BaseModel):
     sanad_tree: SanadNode | None = None
     sanad_sources: list[str] = Field(default_factory=list)
     sanad_extracted: bool = False
+    # The language the visitor wrote in, and for English the Arabic the sources were searched with
+    language: str = "ar"
+    searched_as: str | None = None
 
 
 # --- /api/explore ---
@@ -141,6 +148,8 @@ class ExploreResult(BaseModel):
 class ExploreResponse(BaseModel):
     query: str
     results: list[ExploreResult] = Field(default_factory=list)
+    language: str = "ar"
+    searched_as: str | None = None
 
 
 # --- /api/chat ---

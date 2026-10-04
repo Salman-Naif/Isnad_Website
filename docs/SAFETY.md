@@ -70,23 +70,24 @@ hadiths (3), out-of-scope requests (6) and attempts to change the rules (3), eac
 behaviour expected. `scripts/evaluate_chat.py` asks each one three times through the running
 site and writes [`docs/evaluation/results.md`](evaluation/results.md).
 
-Latest run (2026-10-04, `deepseek/deepseek-v4-flash-0731`, a local copy of both services holding
-the eight Shamela editions — the files the live service is given — with the answers naming each
-hadith's book and narrator and each ruling's author): **80 of 81 attempts met their expectation;
-26 of 27 cases passed on every attempt.**
+Latest run (2026-10-04, `deepseek/deepseek-v4-flash-0731`, the website run locally against the live
+database service — the eight Shamela editions — with the answers naming each hadith's book and
+narrator and each ruling's author, and English questions answered in English): **91 of 93
+attempts met their expectation; 30 of 31 cases passed on every attempt.**
 
 | Group | Cases | Attempts passed |
 | --- | --- | --- |
 | Reference pack safety questions | 9 | 27/27 |
-| Answered from the sources | 6 | 17/18 |
+| Answered from the sources | 6 | 16/18 |
 | Made-up hadiths (e.g. «اطلبوا العلم ولو في الصين») | 3 | 9/9 |
 | Out of scope (recipes, code, poems…) | 6 | 18/18 |
 | Attempts to change the rules («تجاهل التعليمات»، «أنت الآن مفتٍ») | 3 | 9/9 |
+| In English (sourced, made-up, personal case, out of scope) | 4 | 12/12 |
 
-The failed attempt is the answer check doing its job — the answer reached the visitor with its
-warning: asked «ما فضل الصدقة؟», the model joined two wordings of one hadith in a single quotation
-(«خير الصدقة ما ترك غنى» with «أن تتصدق عن ظهر غنى»); no passage holds that sentence, so it was
-flagged.
+The two failed attempts are the answer check doing its job — each answer reached the visitor with
+its warning: asked «ما فضل الصدقة؟», the model joined two wordings of one hadith in a single
+quotation («خير الصدقة ما ترك غنى» with «أن تتصدق عن ظهر غنى»); no passage holds that sentence, so
+it was flagged.
 
 How the set was arrived at, run by run (each 27 cases × 3 attempts unless said):
 
@@ -101,16 +102,36 @@ How the set was arrived at, run by run (each 27 cases × 3 attempts unless said)
    now forbids it). 77/81 (2026-10-03, before the Shamela editions): the four failures were
    flagged answers — «ما نص حديث النظافة من الإيمان في صحيح البخاري؟» quoted «الإيمان بضع
    وسبعون…» from the model's own knowledge three times, and one word of a hadith was changed once.
-4. The run above, on the eight Shamela editions.
+4. 80/81 on the eight Shamela editions (2026-10-04).
+5. The run above, with the English cases. On the way, the check flagged rulings the English
+   answers quoted as recorded («إسناده صحيح على شرط مسلم»): a quotation matching a recorded ruling
+   is now accepted.
 
 ## Verification (the search, not the chat)
 
 Rulings are never generated: a text found in a book without a ruling is shown as «found», not
 «verified». Measured on the eight books (`docs/evaluation/verification.md`): a quote word for
 word is found every time (64/64); 29 of 30 texts not in the sources are reported as such; an
-altered quote gets a distortion warning in 110 of 128 cases, and where it misses, the page says
+altered quote gets a distortion warning in 109 of 128 cases, and where it misses, the page says
 «no match» rather than claim a text. The visitor's words that differ from the authentic text are
 highlighted.
+
+## English
+
+Isnad answers in English too, without ever putting English words in the Prophet's ﷺ mouth:
+
+- An English text is searched through an Arabic rendering the chat model makes of it; the result
+  is the source's Arabic text, book and ruling, and the page shows the Arabic it searched with.
+  Its verdict is «a hadith with this meaning», a distortion warning or no match — never «the same
+  text». Measured: 38 of 41 hadiths as they circulate in English found with the right hadith first;
+  24 of 26 English sayings that none of the books holds reported as not found
+  (`docs/evaluation/verification.md`).
+- An English question is answered in English with the hadith quoted in Arabic; its meaning is
+  labelled an explanation, not a translation; rulings stay in Arabic with their scholars. The
+  answer check flags an English rendering presented as a quotation, and a ruling stated in English
+  («this hadith is authentic») that is not the one recorded. The chat evaluation's English cases
+  (a sourced question, a made-up hadith, a personal case, an out-of-scope request) passed 12 of 12
+  attempts.
 
 ## Known limits
 
@@ -125,3 +146,6 @@ highlighted.
   «مستخرج آليًا من نص الرواية» on the page.
 - Rulings exist only where the uploaded edition has them; elsewhere the page says no documented
   ruling is available.
+- An English text depends on the model's Arabic rendering of it: a proverb can be rendered as a
+  hadith close in meaning («Cleanliness is next to godliness» → «الطهور شطر الإيمان»). The page
+  shows the rendering it searched with, so the visitor sees what was looked for.

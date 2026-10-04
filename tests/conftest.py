@@ -73,12 +73,22 @@ class FakeRAG:
         self.error: Exception | None = None
         self.pieces = ["إجابة ", "تجريبية [1]"]  # what stream() yields
         self.reply = "إجابة تجريبية [1]"  # what answer() returns
+        self.renderings: dict[str, str] = {}  # English text → its Arabic rendering (to_arabic)
+        self.translations: list[str] = []
+        self.translation_error: Exception | None = None
 
     def answer(self, question, contexts, history=None, subject="") -> str:
         if self.error:
             raise self.error
         self.calls.append({"question": question, "contexts": contexts, "history": history, "subject": subject})
         return self.reply
+
+    def to_arabic(self, text: str) -> str:
+        """The Arabic rendering of an English text: a fixed one unless a test sets its own."""
+        if self.translation_error:
+            raise self.translation_error
+        self.translations.append(text)
+        return self.renderings.get(text, "إنما الأعمال بالنيات")
 
     def stream(self, question, contexts, history=None, subject=""):
         if self.error:

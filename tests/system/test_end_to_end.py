@@ -57,7 +57,7 @@ def test_visitor_verifies_a_hadith(visitor):
 
 
 def test_text_outside_the_sources_is_not_verified(visitor):
-    body = visitor.post("/api/search", json={"query": "zzzz qqqq xxxx"}).json()
+    body = visitor.post("/api/search", json={"query": "ققق ززز سسس ظظظ"}).json()
     assert body["verdict"] == "no_match"
 
 

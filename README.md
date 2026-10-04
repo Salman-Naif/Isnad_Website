@@ -4,7 +4,8 @@
 
 **Live demo:** https://isnadapplication-production.up.railway.app
 
-The public website of Isnad. A visitor enters any hadith or quote in any wording; the site
+The public website of Isnad, in Arabic and English. A visitor enters any hadith or quote in any
+wording, in either language; the site
 matches it semantically against the approved sources, shows the ruling attributed to the
 scholar who issued it with the chain of narration (sanad), warns when the wording is a
 distorted version of a known text, and lets the visitor ask the model about it — answered
@@ -63,7 +64,7 @@ Visitor ──► Isnad_Website (this repo) ──SITE_API_KEY──► Isnad_Da
 | Layer | Technology |
 | --- | --- |
 | Language | Python 3.11.9 |
-| Server and page | FastAPI + Jinja2; plain HTML, CSS and JavaScript (no framework), Arabic, right-to-left |
+| Server and page | FastAPI + Jinja2; plain HTML, CSS and JavaScript (no framework); Arabic (right-to-left) and English, switched on the page |
 | Chat model | `deepseek/deepseek-v4-flash-0731` on OpenRouter, through the OpenAI Python SDK |
 | Search | The database service's API: Qwen3 embeddings (`qwen/qwen3-embedding-4b`, 1024 dims) in ChromaDB, plus an SQLite FTS5 index for word-for-word quotes |
 | Hosting | Docker on Railway: this website and the database service, two services in one project |
@@ -99,10 +100,12 @@ without diacritics, as a visitor types it.
 | --- | --- | --- |
 | A hadith's words, word for word | same text 64/64 | 64/64 |
 | Its first five words only | same text 59/64 | 59/64 |
-| Two words missing | distortion warning 59/64 | 48/64 |
+| Two words missing | distortion warning 58/64 | 47/64 |
 | One word changed | distortion warning 51/64 | 38/64 |
 | A well-known hadith in a visitor's own words | warning (or same text) 17/24 | 22/24 first, 17/24 with the right verdict |
 | Not in the sources: modern sentences, proverbs, sayings wrongly attributed to the Prophet ﷺ | no match 29/30 | — |
+| A well-known hadith as it circulates in **English** | «a hadith with this meaning» 33/41, a distortion warning 5/41 | 38/41 |
+| An **English** saying not in the books («Seek knowledge even in China», proverbs) | no match 24/26 | — |
 
 Where an altered quote misses, the query is usually a fragment from mid-narration (the matn as
 extracted from books that don't mark it) or the changed word is a common one; the hadith then
@@ -110,6 +113,24 @@ falls below the warning thresholds and the page says «no match» rather than cl
 
 If the database's `EMBEDDING_MODEL` changes, recalibrate with real sources and set the
 thresholds below.
+
+### English texts
+
+The books are Arabic, so an English text is searched through an Arabic rendering of it: the chat
+model is asked to write the visitor's text in Arabic — a hadith's own Arabic wording if the text
+renders one, otherwise a literal translation, never a different hadith — and that Arabic goes
+through the same search and thresholds (`app/services/language.py`, `app/services/query.py`).
+The model only rewrites the search: what the page shows is the source's Arabic text, its book and
+its ruling, never a translation of a hadith. The verdict for an English text is **«a hadith with
+this meaning»** (`meaning`), a distortion warning or no match — never «the same text», since the
+visitor's words are not the hadith's — and the page shows the Arabic it searched with, so the
+visitor can see what was looked for. Searching the English text directly scored hadiths
+0.63–0.81 and unrelated sayings 0.40–0.71, too close to separate; it is only the fallback when the
+model can't be reached, and then only a match above `THRESHOLD_CROSS_LINGUAL` (0.75) is a warning.
+Renderings are cached; each new English search costs one short model call (~$0.00005).
+
+The two English sayings reported wrongly were each rendered as a hadith close in meaning
+(«Cleanliness is next to godliness» → «الطهور شطر الإيمان»); the page shows that rendering.
 
 "Found" exists because a book may itself list weak or fabricated narrations — appearing in a
 book is not the same as being authenticated.
@@ -157,6 +178,11 @@ The chat is evaluated on a fixed set of cases (the reference pack's safety quest
 hadiths, out-of-scope and rule-breaking requests), three attempts each:
 `python scripts/evaluate_chat.py --url <site>` → [`docs/evaluation/results.md`](docs/evaluation/results.md).
 
+A question asked in English is answered in English: its passages are found through its Arabic
+rendering, the hadith is quoted in its Arabic words, its meaning is given as an explanation
+(«Meaning (an explanation, not a translation of the hadith)»), its ruling is given in Arabic as
+recorded with its scholar, and the fixed answers and the answer check's warnings are in English.
+
 Reasoning is switched off (`LLM_REASONING=false`): answers take a few seconds instead of ~10.
 
 ## Security
@@ -188,7 +214,9 @@ isnad_website/
 │   │   ├── database.py         # Client for the database service API
 │   │   ├── verification.py     # Similarity → verdict; one isnad tree for the books found
 │   │   ├── isnad.py            # Match type, the words that differ (شبهة), merging trees
-│   │   ├── rag.py              # Chat model via OpenRouter
+│   │   ├── rag.py              # Chat model via OpenRouter; Arabic renderings of English texts
+│   │   ├── language.py         # Arabic or English; the rendering's instruction and cache
+│   │   ├── query.py            # What a text is searched as (an English one, through Arabic)
 │   │   └── guard.py            # Retrieval gate, personal cases, the answer check
 │   ├── templates/              # index · maintenance
 │   └── static/                 # CSS · JS
@@ -296,6 +324,7 @@ request, then builds the Docker image and checks that it starts and answers `/he
 | `THRESHOLD_HIGH`            | No       | `0.90`                            |
 | `THRESHOLD_STRONG`          | No       | `0.75`                            |
 | `THRESHOLD_MID`             | No       | `0.60`                            |
+| `THRESHOLD_CROSS_LINGUAL`   | No       | `0.75` (an English text searched without its Arabic rendering) |
 | `MIN_WORD_OVERLAP`          | No       | `0.6`                             |
 | `SEARCH_PER_MINUTE`         | No       | `30`                              |
 | `CHAT_PER_MINUTE`           | No       | `10`                              |

@@ -60,6 +60,10 @@ class Settings(BaseSettings):
     threshold_strong: float = 0.75
     threshold_mid: float = 0.60
     min_word_overlap: float = 0.6
+    # An English text searched as it is (the model couldn't render it in Arabic): only a strong
+    # match is a hadith close to it. Measured on the live sources: hadiths as they circulate in
+    # English 0.63–0.81, sayings that none of the books holds 0.40–0.71.
+    threshold_cross_lingual: float = 0.75
     # Search by meaning (/api/explore): hadiths about an idea, not one quote. Closer than this
     # to the visitor's idea to be listed. Not yet measured on the real sources — set it from
     # what the real search returns (EXPLORE_MIN_SIMILARITY on Railway).

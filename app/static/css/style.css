@@ -51,7 +51,15 @@ button, input, textarea { font: inherit; }
 
 /* ---------- Header ---------- */
 .site-header { background: linear-gradient(180deg, var(--dark-green) 0%, #0A3226 100%); color: #fff; padding-top: env(safe-area-inset-top); }
-.header-inner { display: flex; align-items: center; min-height: 68px; }
+.header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 68px; }
+.lang-toggle {
+  flex: none; min-height: 40px; padding: .35rem .9rem; color: var(--gold); font: inherit; font-weight: 700; cursor: pointer;
+  background: transparent; border: 1px solid rgba(212, 175, 55, .55); border-radius: 999px;
+}
+.lang-toggle:hover, .lang-toggle:focus-visible { background: rgba(212, 175, 55, .12); }
+.searched-as { margin: .25rem 0 .9rem; padding: .6rem .9rem; line-height: 1.8; background: var(--surface-2); border: 1px dashed var(--border-strong); border-radius: var(--radius); }
+.searched-as > * { display: block; }
+.searched-as q { font-weight: 700; quotes: "«" "»"; }
 .brand { display: flex; align-items: center; gap: .75rem; color: inherit; text-decoration: none; }
 .logo-mark {
   display: grid; place-items: center; flex: none; width: 42px; height: 42px; border-radius: 12px; color: var(--dark-green);

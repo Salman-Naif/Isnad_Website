@@ -33,6 +33,8 @@ from app.core.rate_limit import rate_limited
 from app.models.schemas import ChatPassage, ChatRequest, ChatResponse, Match
 from app.services import guard
 from app.services.database import DatabaseClient, DatabaseError
+from app.services.language import language_of
+from app.services.query import for_search
 from app.services.rag import RAGError, RAGService
 
 router = APIRouter(
@@ -53,9 +55,10 @@ def retrieve(db: DatabaseClient, texts: list[str], limit: int) -> list[Match]:
     return found[:limit]
 
 
-def _contexts(db: DatabaseClient, payload: ChatRequest) -> list[Match]:
+def _contexts(db: DatabaseClient, rag: RAGService, payload: ChatRequest) -> list[Match]:
     settings = get_settings()
-    texts = [t.strip() for t in (payload.context_query, payload.question) if t.strip()]
+    # An English question or searched text looks for its passages through its Arabic rendering.
+    texts = [for_search(t.strip(), rag)[0] for t in (payload.context_query, payload.question) if t.strip()]
     try:
         found = retrieve(db, texts, settings.chat_context_passages)
     except DatabaseError as exc:
@@ -70,7 +73,8 @@ def _check(answer: str, contexts: list[Match], payload: ChatRequest) -> tuple[li
     """(warnings about the answer, whether it is a refusal resting on no passage)."""
     own = [t for t in (payload.question, payload.context_query) if t.strip()]
     rulings = [f"{m.hukm or ''} {m.mohaddith or ''}" for m in contexts]
-    return guard.check_answer(answer, [m.text for m in contexts], own, rulings), guard.is_refusal(answer)
+    warnings = guard.check_answer(answer, [m.text for m in contexts], own, rulings, language_of(payload.question))
+    return warnings, guard.is_refusal(answer)
 
 
 def _sources(contexts: list[Match]) -> list[str]:
@@ -95,10 +99,10 @@ def chat(
 ) -> ChatResponse:
     ensure_open(db, "chat")
     started = time.perf_counter()
-    contexts = _contexts(db, payload)
+    contexts = _contexts(db, rag, payload)
     try:
         # Nothing in the sources is about the question: the model is not asked at all.
-        answer = guard.NO_CONTEXT_ANSWER if not contexts else rag.answer(
+        answer = guard.no_context_answer(language_of(payload.question)) if not contexts else rag.answer(
             payload.question,
             contexts,
             history=[m.model_dump() for m in payload.history],
@@ -133,11 +137,11 @@ def chat_stream(
 ) -> StreamingResponse:
     ensure_open(db, "chat")
     started = time.perf_counter()
-    contexts = _contexts(db, payload)
+    contexts = _contexts(db, rag, payload)
     try:
         # Opened before the response starts: an unreachable model is still a 503. Nothing in
         # the sources is about the question: the model is not asked at all.
-        pieces = iter([guard.NO_CONTEXT_ANSWER]) if not contexts else rag.stream(
+        pieces = iter([guard.no_context_answer(language_of(payload.question))]) if not contexts else rag.stream(
             payload.question,
             contexts,
             history=[m.model_dump() for m in payload.history],

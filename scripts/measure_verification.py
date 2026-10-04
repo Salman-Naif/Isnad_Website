@@ -36,6 +36,8 @@ EXPECTED = {
     # a visitor's words can be one of the hadith's own wordings («من لم يشكر الناس لم يشكر الله»)
     "own_words": ("distorted", *SAME_TEXT),
     "not_in_sources": ("no_match",),
+    # An English rendering is never the same text: its meaning found, or a hadith close to it
+    "en_hadith": ("meaning", "distorted"), "en_not_in_sources": ("no_match",),
 }
 # The same hadith, for an altered quote: the first result holds 8 of the 10 words it was made
 # from — in another book's wording as well, which differs by a word or two.
@@ -72,7 +74,7 @@ def holds(expected: str, text: str, kind: str) -> bool:
 
 def judge(case: dict, body: dict) -> dict:
     top = body["results"][0] if body["results"] else None
-    right = case["kind"] == "not_in_sources" or bool(
+    right = case["kind"] in ("not_in_sources", "en_not_in_sources") or bool(
         top and any(holds(e, top["text"], case["kind"]) for e in case["expect"]))
     return {
         **case, "verdict": body["verdict"], "right_hadith_first": right,
@@ -81,6 +83,7 @@ def judge(case: dict, body: dict) -> dict:
         "word_overlap": top["word_overlap"] if top else 0.0,
         # without the edition's diacritics: the report quotes the classical text, not the edition
         "first_result": f"{top['source']}: {_DIACRITICS.sub('', top['text'])[:100]}" if top else "",
+        "searched_as": _DIACRITICS.sub("", body.get("searched_as") or ""),
     }
 
 
@@ -108,7 +111,7 @@ def main() -> None:
 
 def write_report(rows: list[dict], spec: dict, args) -> None:
     (OUT / "verification.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
-    verdicts = ("verified", "found", "distorted", "no_match")
+    verdicts = ("verified", "found", "meaning", "distorted", "no_match")
     lines = [
         "# Verification — results",
         "",
@@ -127,15 +130,17 @@ def write_report(rows: list[dict], spec: dict, args) -> None:
         group = [r for r in rows if r["kind"] == kind]
         if not group:
             continue
-        right = "—" if kind == "not_in_sources" else f"{sum(r['right_hadith_first'] for r in group)}"
+        right = "—" if kind.endswith("not_in_sources") else f"{sum(r['right_hadith_first'] for r in group)}"
         counts = " | ".join(str(sum(r["verdict"] == v for r in group)) for v in verdicts)
         lines.append(f"| {kind} | {expected} | {len(group)} | {sum(r['passed'] for r in group)} | {right} | {counts} |")
-    lines += ["", "## Cases that did not pass", "", "| Case | Kind | Query | Verdict | Similarity | First result |",
-              "| --- | --- | --- | --- | --- | --- |"]
+    lines += ["", "## Cases that did not pass", "",
+              "| Case | Kind | Query | Searched as | Verdict | Similarity | First result |",
+              "| --- | --- | --- | --- | --- | --- | --- |"]
     for r in rows:
         if not r["passed"]:
             first = r["first_result"].replace("|", "/").replace("\n", " ")
-            lines.append(f"| {r['id']} | {r['kind']} | {r['query']} | {r['verdict']} | {r['similarity']} | {first} |")
+            lines.append(f"| {r['id']} | {r['kind']} | {r['query']} | {r['searched_as']} | {r['verdict']} | "
+                         f"{r['similarity']} | {first} |")
     (OUT / "verification.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"\n→ {OUT / 'verification.md'}")
 

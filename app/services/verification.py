@@ -10,8 +10,17 @@ in that book (which may itself list weak or fabricated narrations), so it is "fo
 """
 
 from app.config import get_settings
-from app.models.schemas import Match, SanadNode, SearchResult, Verdict
+from app.models.schemas import Match, MatchType, SanadNode, SearchResult, Verdict
 from app.services import isnad
+
+
+def classify_english(similarity: float, has_ruling: bool, word_overlap: float | None, translated: bool) -> Verdict:
+    """An English text: searched through its Arabic rendering, the hadith found is the meaning of
+    what the visitor wrote, not the same text; searched as it is, only a strong match counts."""
+    if translated:
+        verdict = classify(similarity, has_ruling, word_overlap)
+        return Verdict.MEANING if verdict in (Verdict.VERIFIED, Verdict.FOUND) else verdict
+    return Verdict.DISTORTED if similarity >= get_settings().threshold_cross_lingual else Verdict.NO_MATCH
 
 
 def classify(similarity: float, has_ruling: bool, word_overlap: float | None = None) -> Verdict:
@@ -27,35 +36,56 @@ def classify(similarity: float, has_ruling: bool, word_overlap: float | None = N
     return Verdict.NO_MATCH
 
 
-def verdict_message(verdict: Verdict) -> str:
-    """Arabic text shown to the visitor.
+_MESSAGES = {
+    "ar": {
+        Verdict.VERIFIED: "وُجد هذا النص في المصادر — حكمه موضّح أدناه",
+        Verdict.FOUND: "النص موجود في المصادر، لكن لا يتوفر له حكم موثّق",
+        Verdict.DISTORTED: "تنبيه: هذا يشبه نصًا معروفًا بصياغة مختلفة",
+        Verdict.MEANING: "وُجد في المصادر حديث بهذا المعنى — هذا لفظه العربي من مصدره",
+        Verdict.NO_MATCH: "لا يوجد تطابق قوي في المصادر المعتمدة",
+    },
+    "en": {
+        Verdict.VERIFIED: "This text is in the sources — its ruling is shown below",
+        Verdict.FOUND: "This text is in the sources, but no documented ruling is available for it",
+        Verdict.DISTORTED: "Caution: this resembles a known hadith, with a different wording or meaning",
+        Verdict.MEANING: "A hadith with this meaning is in the sources — shown in its Arabic words, from its source",
+        Verdict.NO_MATCH: "No hadith with this meaning was found in the approved sources",
+    },
+}
+
+
+def verdict_message(verdict: Verdict, lang: str = "ar") -> str:
+    """The verdict in the visitor's language.
 
     VERIFIED means "we have a documented ruling for this text", not "this hadith is
     authentic" — the ruling itself may be weak or fabricated, so the message points to it.
     """
-    return {
-        Verdict.VERIFIED: "وُجد هذا النص في المصادر — حكمه موضّح أدناه",
-        Verdict.FOUND: "النص موجود في المصادر، لكن لا يتوفر له حكم موثّق",
-        Verdict.DISTORTED: "تنبيه: هذا يشبه نصًا معروفًا بصياغة مختلفة",
-        Verdict.NO_MATCH: "لا يوجد تطابق قوي في المصادر المعتمدة",
-    }[verdict]
+    return _MESSAGES.get(lang, _MESSAGES["ar"])[verdict]
 
 
-def build_results(matches: list[Match], query: str = "") -> list[SearchResult]:
-    """Display-ready results, best match first."""
+def build_results(matches: list[Match], query: str = "", lang: str = "ar", translated: bool = False) -> list[SearchResult]:
+    """Display-ready results, best match first. For an English text (`lang` "en"), `query` is the
+    Arabic it was searched with when `translated`; the visitor's words are not compared with the
+    hadith's, which are in another language."""
     results = []
     for m in matches:
         similarity = min(1.0, max(0.0, m.similarity))
-        verdict = classify(similarity, has_ruling=bool(m.hukm), word_overlap=m.word_overlap)
-        words = isnad.compare_words(query, m.text) if query else []
-        same_text = verdict in (Verdict.VERIFIED, Verdict.FOUND)
+        if lang == "en":
+            verdict = classify_english(similarity, bool(m.hukm), m.word_overlap, translated)
+            words = []
+            kind = {Verdict.MEANING: MatchType.MEANING, Verdict.DISTORTED: MatchType.REWORDED}.get(verdict, MatchType.NONE)
+        else:
+            verdict = classify(similarity, has_ruling=bool(m.hukm), word_overlap=m.word_overlap)
+            words = isnad.compare_words(query, m.text) if query else []
+            same_text = verdict in (Verdict.VERIFIED, Verdict.FOUND)
+            kind = isnad.match_type(similarity, words, same_text, verdict == Verdict.DISTORTED)
         results.append(SearchResult(
             text=m.text,
             similarity=round(similarity, 4),
             word_overlap=m.word_overlap,
-            match_type=isnad.match_type(similarity, words, same_text, verdict == Verdict.DISTORTED),
+            match_type=kind,
             verdict=verdict,
-            verdict_message=verdict_message(verdict),
+            verdict_message=verdict_message(verdict, lang),
             kind=m.kind,
             hukm=m.hukm,
             mohaddith=m.mohaddith,

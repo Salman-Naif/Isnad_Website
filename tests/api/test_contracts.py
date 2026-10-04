@@ -13,12 +13,13 @@ def test_search_response_shape(client, db):
     db.matches = [HADITH]
     body = client.post("/api/search", json={"query": "إنما الأعمال بالنيات"}).json()
     assert set(body) == {"query", "verdict", "verdict_message", "results", "sanad_tree", "sanad_sources",
-                         "sanad_extracted"}
+                         "sanad_extracted", "language", "searched_as"}
+    assert (body["language"], body["searched_as"]) == ("ar", None)
     assert set(body["results"][0]) == {"text", "similarity", "word_overlap", "match_type", "verdict",
                                        "verdict_message", "kind", "hukm", "mohaddith", "sanad", "sanad_tree",
                                        "sanad_extracted", "words", "topic", "source", "compiler"}
     assert body["results"][0]["words"][0] == {"word": "إنما", "changed": False}
-    assert body["verdict"] in {"verified", "found", "distorted", "no_match"}
+    assert body["verdict"] in {"verified", "found", "distorted", "meaning", "no_match"}
 
 
 def test_search_top_k_is_passed_on_and_bounded(client, db):

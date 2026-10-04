@@ -16,7 +16,8 @@ from collections.abc import Iterator
 from app.config import get_settings
 from app.models.schemas import Match, SanadNode
 from app.services import guard
-from app.services.guard import NO_CONTEXT_ANSWER, OUT_OF_SCOPE_ANSWER
+from app.services.guard import NO_CONTEXT_ANSWER, OUT_OF_SCOPE_ANSWER, OUT_OF_SCOPE_ANSWER_EN
+from app.services.language import TRANSLATION_PROMPT, TranslationCache, language_of, looks_arabic
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +55,22 @@ SYSTEM_PROMPT = f"""أنت «مساعد إسناد»: أداة آلية مدعو
 - اكتفِ بأقرب حديثين أو ثلاثة إلى السؤال، وما تكرر لفظه في أكثر من كتاب فاذكره مرة واحدة مع كتبه.
 - فقرات قصيرة بلغة السؤال (وبالعربية الفصحى إن كان بالعربية)، بنص عادي دون رموز تنسيق مثل ** أو # أو قوائم نقطية."""
 
+# A question asked in English: answered in English, the hadith's words kept in Arabic — its
+# meaning given as an explanation, never as the Prophet's ﷺ words in translation.
+ENGLISH_NOTE = f"""
+
+(ملاحظة من النظام: السؤال بالإنجليزية، فأجب بالإنجليزية مع الالتزام بكل القواعد السابقة:
+- انقل لفظ الحديث بالعربية كما هو بين «»، ولا تكتب ترجمة له تنسبها إلى النبي ﷺ، ولا تضع كلامك الإنجليزي بين علامات تنصيص.
+- بعد اللفظ العربي اذكر معناه بالإنجليزية مبتدئًا بـ: Meaning (an explanation, not a translation of the hadith):
+- اكتب العزو بالإنجليزية، مثل: Narrated by al-Bukhari in his Sahih from Umar ibn al-Khattab (may Allah be pleased with him).
+- اذكر الحكم بلفظه العربي كما ورد مع قائله، مثل: Ruling: «حسن صحيح» — al-Tirmidhi. وإن لم يُذكر حكم فقل: No ruling is recorded for it in the books available in Isnad.
+- إن لم تجد حديثًا مطابقًا لما طُلب فابدأ بـ: I did not find a matching hadith in the books available in Isnad.
+- إن كانت المسألة حالة شخصية فقل إنها تحتاج إلى a qualified scholar or the fatwa authority in the asker's country.
+- إن كان المطلوب خارج النطاق فأجب بهذه الجملة وحدها: {OUT_OF_SCOPE_ANSWER_EN})"""
+
 # Chains shown to the model per passage: enough for «من رواه؟», without crowding the context.
 MAX_CHAINS = 4
+TRANSLATION_MAX_TOKENS = 300
 
 
 class RAGError(Exception):
@@ -69,6 +84,7 @@ class RAGService:
         self.settings = get_settings()
         self._client = None
         self._lock = threading.Lock()
+        self._renderings = TranslationCache()
 
     def _load(self):
         """Initialize the OpenRouter client (OpenAI-compatible) once."""
@@ -126,6 +142,20 @@ class RAGService:
         chunks = self._complete(_messages(question, contexts, history, subject), stream=True)
         return self._pieces(chunks)
 
+    def to_arabic(self, text: str) -> str:
+        """An Arabic rendering of the visitor's English text, to search the books with — never
+        shown as a hadith (app/services/language.py)."""
+        cached = self._renderings.get(text)
+        if cached:
+            return cached
+        messages = [{"role": "system", "content": TRANSLATION_PROMPT}, {"role": "user", "content": text}]
+        response = self._complete(messages, stream=False, max_tokens=TRANSLATION_MAX_TOKENS)
+        arabic = (response.choices[0].message.content or "").strip() if response.choices else ""
+        if not looks_arabic(arabic):
+            raise RAGError("تعذّرت ترجمة النص للبحث")
+        self._renderings.put(text, arabic)
+        return arabic
+
     def _pieces(self, chunks) -> Iterator[str]:
         import openai
 
@@ -142,14 +172,14 @@ class RAGService:
         if not wrote:
             raise RAGError("لم يُرجع النموذج إجابة، حاول مرة أخرى")
 
-    def _complete(self, messages: list[dict], stream: bool):
+    def _complete(self, messages: list[dict], stream: bool, max_tokens: int | None = None):
         import openai
 
         try:
             return self._load().chat.completions.create(
                 model=self.settings.llm_model,
                 messages=messages,
-                max_tokens=self.settings.llm_max_tokens,
+                max_tokens=max_tokens or self.settings.llm_max_tokens,
                 temperature=0,  # the same question gets the same answer
                 stream=stream,
                 # OpenRouter's unified switch for the model's thinking phase
@@ -169,6 +199,8 @@ def _messages(question: str, contexts: list[Match], history: list[dict] | None, 
     # Said by the system, outside the visitor's words, so «أنت الآن مفتٍ» can't talk it away.
     note = ("\n\n(ملاحظة من النظام: هذا سؤال عن حالة شخصية للسائل؛ طبّق القاعدة 9 فلا تُفتِ وأحِله "
             "إلى عالم مؤهل، ولا تجب بجملة خارج النطاق.)") if guard.is_personal_case(question) else ""
+    if language_of(question) == "en":
+        note += ENGLISH_NOTE
     messages.append({
         "role": "user",
         "content": f"{intro}الأحاديث:\n{format_context(contexts)}\n\nالسؤال: {question}{note}",
