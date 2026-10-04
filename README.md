@@ -132,6 +132,9 @@ Renderings are cached; each new English search costs one short model call (~$0.0
 The two English sayings reported wrongly were each rendered as a hadith close in meaning
 («Cleanliness is next to godliness» → «الطهور شطر الإيمان»); the page shows that rendering.
 
+When the same words are in several books, the best match is the first in the books' order
+(al-Bukhari, Muslim, then the Sunan…), as the database lists them.
+
 "Found" exists because a book may itself list weak or fabricated narrations — appearing in a
 book is not the same as being authenticated.
 

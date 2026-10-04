@@ -102,3 +102,9 @@ def test_a_ruling_quoted_as_recorded_is_not_flagged():
     answer = "Narrated by Ahmad «من غشنا فليس منا» [1]. Ruling: «إسناده صحيح على شرط مسلم» — Shu'ayb al-Arna'ut."
     assert guard.check_answer(answer, [PASSAGE], [], ["إسناده صحيح على شرط مسلم شعيب الأرنؤوط"], "en") == []
     assert guard.check_answer(answer, [PASSAGE], [], ["حسن"], "en")  # a ruling not recorded is still flagged
+
+
+def test_equal_matches_keep_the_order_the_database_gives():
+    books = ["صحيح البخاري", "صحيح مسلم", "سنن ابن ماجه"]
+    matches = [Match(id=b, text="من غشنا فليس منا", similarity=1.0, kind="structured_hadith", source=b) for b in books]
+    assert [r.source for r in build_results(matches, "من غشنا فليس منا")] == books

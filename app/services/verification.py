@@ -97,6 +97,8 @@ def build_results(matches: list[Match], query: str = "", lang: str = "ar", trans
             source=m.source,
             compiler=m.compiler,
         ))
+    # A stable sort: equal similarities keep the database's order — a quote found word for word in
+    # several books comes in the books' order (al-Bukhari, Muslim, then the Sunan…).
     return sorted(results, key=lambda r: r.similarity, reverse=True)
 
 
