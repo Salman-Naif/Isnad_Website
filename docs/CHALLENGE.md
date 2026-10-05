@@ -16,7 +16,7 @@
 | Technologies | Python 3.11 · FastAPI · Jinja2 · ChromaDB · SQLite (FTS5) · OpenRouter: `qwen/qwen3-embedding-4b` (embeddings), `deepseek/deepseek-v4-flash-0731` (chat), Gemini (OCR of scanned books) · Docker · Railway · GitHub Actions |
 | Data | Eight books of hadith from their printed editions in المكتبة الشاملة (63,815 hadiths, rulings as the editions record them), checked against الدرر السنية — the database repo's `docs/DATA_SOURCES.md` |
 | Run it | Each README: "Running locally" (environment variables in `.env.example`, all listed under "Environment variables"), "Deploying to Railway", "Development and testing" |
-| Dashboard access | Not public. The team's system manager can create an account for a reviewer on request. |
+| Dashboard access | Not public — every page is shown in the Isnad_Database README, "Screenshots" (the website's: this repo's README, "Screenshots"). The team's system manager can create an account for a reviewer on request. |
 
 ## Team and contact
 

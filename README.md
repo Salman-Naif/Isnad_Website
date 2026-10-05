@@ -157,6 +157,17 @@ of alef, ya and ta marbuta, so spelling alone is never marked as a difference.
 Stylesheet and script URLs carry a hash of their content (`?v=…`), so after a deploy browsers
 load the new script with the new page.
 
+### Screenshots
+
+From the website run locally (`docs/screenshots/`; two of the books, so some results differ from
+the live site's):
+
+| | |
+| --- | --- |
+| ![A hadith found word for word: its ruling with its scholar, and its isnad tree merged from two books](docs/screenshots/verify-verified.png) | ![A reworded hadith: a distortion warning, the words that differ highlighted](docs/screenshots/verify-distorted.png) |
+| ![A hadith written in English: the hadith with that meaning, in its Arabic words](docs/screenshots/verify-english.png) | ![The chat: the hadith quoted with its book and narrator, its meaning and its rulings, with the texts it rests on](docs/screenshots/chat.png) |
+| ![Search by meaning: the hadiths about an idea](docs/screenshots/explore.png) | ![A saying not in the sources («حب الوطن من الإيمان»)](docs/screenshots/verify-no-match.png) |
+
 ## Chat
 
 The question is answered by the chat model from the passages the database finds for it and
