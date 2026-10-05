@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     chat_context_passages: int = 6
     # Passages less similar than this to the question are not given to the model; with none
     # left, the chat answers that the sources hold nothing on it, without calling the model.
-    # Measured on the live database (9 books): questions about hadith topics scored 0.59–0.83,
+    # Measured on the live database: questions about hadith topics scored 0.59–0.83,
     # questions outside the scope 0.38–0.68 — the prompt refuses the ones that get through.
     chat_min_similarity: float = 0.56
 

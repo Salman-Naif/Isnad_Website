@@ -67,6 +67,6 @@ def test_a_hadith_is_attributed_to_its_book_and_companion():
     saying = SanadNode(name="ابن عمر", children=[SanadNode(name="نافع")])
     hadith = HADITH.model_copy(update={"source": "موطأ الإمام مالك", "sanad": [], "sanad_tree": saying})
     assert attribution(hadith) == "رواه مالك في الموطأ"
-    # A book outside the nine
+    # A book outside the eight
     other = HADITH.model_copy(update={"source": "كتاب.pdf", "sanad": [], "sanad_tree": None})
     assert attribution(other) == "ورد في كتاب.pdf"

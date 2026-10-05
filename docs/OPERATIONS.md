@@ -77,7 +77,7 @@ Monitoring: `/health` on both services (Railway health checks), the dashboard's 
 ## Next steps after the challenge
 
 1. Ask Shamela and the publishers (مؤسسة الرسالة for Musnad Ahmad) for permission to serve
-   their editions' texts and rulings publicly; add Sunan al-Darimi, and rulings for the books
+   their editions' texts and rulings publicly; add rulings for the books
    whose editions record none (Bukhari, Muslim, al-Nasa'i, the Muwatta).
 2. A Sharia reviewer validates a sample of answers each month, using the evaluation set.
 3. Grow the evaluation set with the questions visitors actually ask (from the statistics).

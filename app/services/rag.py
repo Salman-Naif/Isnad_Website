@@ -216,7 +216,7 @@ def chains(tree: SanadNode, limit: int = MAX_CHAINS) -> list[str]:
     return routes[:limit]
 
 
-# How a hadith is attributed to each of the nine books («رواه البخاري في صحيحه»), by the title the
+# How a hadith is attributed to each of the eight books («رواه البخاري في صحيحه»), by the title the
 # database gives it.
 ATTRIBUTION = {
     "صحيح البخاري": "رواه البخاري في صحيحه",
@@ -227,7 +227,6 @@ ATTRIBUTION = {
     "سنن ابن ماجه": "رواه ابن ماجه في سننه",
     "موطأ الإمام مالك": "رواه مالك في الموطأ",
     "مسند الإمام أحمد بن حنبل": "رواه أحمد في مسنده",
-    "سنن الدارمي": "رواه الدارمي في سننه",
 }
 PROPHET = "النبي ﷺ"
 

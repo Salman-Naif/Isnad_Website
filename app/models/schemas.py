@@ -78,7 +78,7 @@ class Match(BaseModel):
     sanad_extracted: bool = False
     topic: str | None = None
     source: str | None = None
-    # The book's compiler and his year of death, for one of the nine books
+    # The book's compiler and his year of death, for one of the eight books
     compiler: str | None = None
 
 
@@ -107,7 +107,7 @@ class SearchResult(BaseModel):
     words: list[QueryWord] = Field(default_factory=list)
     topic: str | None = None
     source: str | None = None
-    # The book's compiler and his year of death, for one of the nine books
+    # The book's compiler and his year of death, for one of the eight books
     compiler: str | None = None
 
 
