@@ -106,6 +106,8 @@ button, input, textarea { font: inherit; }
   flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 40px; padding: .4rem .75rem;
   font: inherit; font-weight: 600; color: var(--text-2); background: transparent; border: 0; border-radius: 9px; cursor: pointer;
 }
+.mode-hint { margin: -.4rem 0 .6rem; }
+@media (max-width: 520px) { .mode-switch .mode { padding: .4rem .25rem; font-size: .85rem; white-space: nowrap; } .mode-switch .mode .icon { display: none; } }
 .mode-switch .mode[aria-pressed="true"] { color: #fff; background: var(--emerald); box-shadow: var(--shadow); }
 .mode-switch .mode:hover[aria-pressed="false"] { background: var(--emerald-50); }
 

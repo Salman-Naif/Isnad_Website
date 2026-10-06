@@ -133,6 +133,8 @@ class SearchResponse(BaseModel):
 class ExploreRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=500)
     top_k: int = Field(default=10, ge=1, le=10)
+    # A title («الصيام»), not a meaning: the hadiths holding its words come first.
+    by_title: bool = False
 
 
 class ExploreResult(BaseModel):
