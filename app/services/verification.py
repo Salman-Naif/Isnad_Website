@@ -63,10 +63,12 @@ def verdict_message(verdict: Verdict, lang: str = "ar") -> str:
     return _MESSAGES.get(lang, _MESSAGES["ar"])[verdict]
 
 
-def build_results(matches: list[Match], query: str = "", lang: str = "ar", translated: bool = False) -> list[SearchResult]:
+def build_results(matches: list[Match], query: str = "", lang: str = "ar", translated: bool = False,
+                  keep_order: bool = False) -> list[SearchResult]:
     """Display-ready results, best match first. For an English text (`lang` "en"), `query` is the
     Arabic it was searched with when `translated`; the visitor's words are not compared with the
-    hadith's, which are in another language."""
+    hadith's, which are in another language. `keep_order`: in the database's order (a subject's
+    closest texts, which it ranks by the subject's words too — grouping.is_subject)."""
     results = []
     for m in matches:
         similarity = min(1.0, max(0.0, m.similarity))
@@ -99,7 +101,7 @@ def build_results(matches: list[Match], query: str = "", lang: str = "ar", trans
         ))
     # A stable sort: equal similarities keep the database's order — a quote found word for word in
     # several books comes in the books' order (al-Bukhari, Muslim, then the Sunan…).
-    return sorted(results, key=lambda r: r.similarity, reverse=True)
+    return results if keep_order else sorted(results, key=lambda r: r.similarity, reverse=True)
 
 
 def merged_isnad(results: list[SearchResult]) -> tuple[SanadNode | None, list[str], bool]:

@@ -19,8 +19,11 @@ from app.config import get_settings
 from app.core.rate_limit import rate_limited
 from app.models.schemas import ExploreRequest, ExploreResponse, ExploreResult
 from app.services.database import DatabaseClient, DatabaseError
+from app.services.grouping import group, is_subject
 from app.services.query import for_search
 from app.services.rag import RAGService
+
+MAX_DB_TOP_K = 20  # the most the database returns
 
 router = APIRouter(
     tags=["explore"], dependencies=[Depends(rate_limited("search", "search_per_minute"))]
@@ -43,23 +46,23 @@ def explore(
     started = time.perf_counter()
     text, lang, searched_as = for_search(query, rag)  # an English idea, through its Arabic rendering
     try:
-        matches = db.search(text, payload.top_k)
+        # More than shown: a hadith found in several books is shown once (grouping.group).
+        matches = db.search(text, min(payload.top_k * 2, MAX_DB_TOP_K))
     except DatabaseError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
 
     floor = get_settings().explore_min_similarity
-    results = sorted(
-        (
-            ExploreResult(
-                text=m.text, similarity=round(min(1.0, max(0.0, m.similarity)), 4), kind=m.kind,
-                hukm=m.hukm, mohaddith=m.mohaddith, topic=m.topic, source=m.source,
-            )
-            for m in matches
-            if m.similarity >= floor
-        ),
-        key=lambda r: r.similarity,
-        reverse=True,
-    )
+    results = [
+        ExploreResult(
+            text=m.text, similarity=round(min(1.0, max(0.0, m.similarity)), 4), kind=m.kind,
+            hukm=m.hukm, mohaddith=m.mohaddith, topic=m.topic, source=m.source,
+        )
+        for m in matches
+        if m.similarity >= floor
+    ]
+    if not is_subject(text):  # a subject keeps the database's order (grouping.is_subject)
+        results.sort(key=lambda r: r.similarity, reverse=True)
+    results = group(results, payload.top_k)
     background.add_task(
         db.record_event, "search", visitor_id(request), query, "explore",
         int((time.perf_counter() - started) * 1000),

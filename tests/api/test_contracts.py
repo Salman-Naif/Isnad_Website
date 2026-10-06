@@ -17,14 +17,14 @@ def test_search_response_shape(client, db):
     assert (body["language"], body["searched_as"]) == ("ar", None)
     assert set(body["results"][0]) == {"text", "similarity", "word_overlap", "match_type", "verdict",
                                        "verdict_message", "kind", "hukm", "mohaddith", "sanad", "sanad_tree",
-                                       "sanad_extracted", "words", "topic", "source", "compiler"}
+                                       "sanad_extracted", "words", "topic", "source", "compiler", "also_in"}
     assert body["results"][0]["words"][0] == {"word": "إنما", "changed": False}
     assert body["verdict"] in {"verified", "found", "distorted", "meaning", "no_match"}
 
 
 def test_search_top_k_is_passed_on_and_bounded(client, db):
     client.post("/api/search", json={"query": "نص", "top_k": 7})
-    assert db.searches == [("نص", 7)]
+    assert db.searches == [("نص", 14)]  # twice as many: a hadith in several books is shown once
     assert client.post("/api/search", json={"query": "نص", "top_k": 0}).status_code == 422
 
 

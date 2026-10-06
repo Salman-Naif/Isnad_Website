@@ -17,9 +17,12 @@ from app.api.deps import ensure_open, get_database, get_rag, visitor_id
 from app.core.rate_limit import rate_limited
 from app.models.schemas import SearchRequest, SearchResponse, Verdict
 from app.services.database import DatabaseClient, DatabaseError
+from app.services.grouping import group, is_subject
 from app.services.query import for_search
 from app.services.rag import RAGService
 from app.services.verification import build_results, merged_isnad, verdict_message
+
+MAX_DB_TOP_K = 20  # the most the database returns
 
 router = APIRouter(
     tags=["search"], dependencies=[Depends(rate_limited("search", "search_per_minute"))]
@@ -42,13 +45,16 @@ def search(
     started = time.perf_counter()
     text, lang, searched_as = for_search(query, rag)
     try:
-        matches = db.search(text, payload.top_k)
+        # More than shown: a hadith found in several books is shown once (grouping.group).
+        matches = db.search(text, min(payload.top_k * 2, MAX_DB_TOP_K))
     except DatabaseError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
 
-    results = build_results(matches, text, lang, translated=searched_as is not None)
+    results = build_results(matches, text, lang, translated=searched_as is not None,
+                            keep_order=is_subject(text))
     verdict = results[0].verdict if results else Verdict.NO_MATCH
-    tree, tree_sources, extracted = merged_isnad(results)
+    tree, tree_sources, extracted = merged_isnad(results)  # from every book's copy
+    results = group(results, payload.top_k)
     # Reported after the response is sent, so statistics never slow the visitor down.
     background.add_task(
         db.record_event, "search", visitor_id(request), query, verdict.value,

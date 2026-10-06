@@ -109,6 +109,8 @@ class SearchResult(BaseModel):
     source: str | None = None
     # The book's compiler and his year of death, for one of the eight books
     compiler: str | None = None
+    # The other books the same hadith is in, shown once (app/services/grouping.py)
+    also_in: list[str] = Field(default_factory=list)
 
 
 class SearchResponse(BaseModel):
@@ -143,6 +145,7 @@ class ExploreResult(BaseModel):
     mohaddith: str | None = None
     topic: str | None = None
     source: str | None = None
+    also_in: list[str] = Field(default_factory=list)
 
 
 class ExploreResponse(BaseModel):
