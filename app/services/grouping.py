@@ -14,7 +14,7 @@ from app.services.isnad import normalize
 SAME_SHARE = 0.8
 # A query this short names a subject («فضل الأم»): the database ranks its closest texts by the
 # subject's words in them too, so its order is kept (not re-sorted by similarity alone).
-SUBJECT_MAX_WORDS = 4
+SUBJECT_MAX_WORDS = 6
 # Fewer words than this are compared whole: a few words in common don't make one hadith.
 MIN_WORDS = 5
 _PROPHET = re.compile(r"صلي الله عليه وسلم")
