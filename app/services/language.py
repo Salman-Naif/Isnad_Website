@@ -28,6 +28,15 @@ TRANSLATION_PROMPT = (
     "it in meaning. Do not add, explain or correct anything, and do not say whether it is authentic. "
     "Reply with the Arabic text only."
 )
+# A question is not a text to find: rendered word for word. Rendered with the prompt above,
+# «Who narrated the hadith about intentions?» became the words of another hadith
+# («من عمل عملًا ليس عليه أمرنا فهو رد»), and the chat searched for that one.
+QUESTION_PROMPT = (
+    "Translate the user's question into Arabic, word for word, to search the books of hadith with. "
+    "Keep any hadith or topic it mentions as it names it, and never replace the question with the "
+    "text of a hadith. Do not answer it, explain it or say whether anything is authentic. Reply "
+    "with the Arabic question only."
+)
 
 
 def language_of(text: str) -> Lang:

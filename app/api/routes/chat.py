@@ -34,7 +34,7 @@ from app.models.schemas import ChatPassage, ChatRequest, ChatResponse, Match
 from app.services import guard
 from app.services.database import DatabaseClient, DatabaseError
 from app.services.language import language_of
-from app.services.query import for_search
+from app.services.query import for_question, for_search, subject_of
 from app.services.rag import RAGError, RAGService
 
 router = APIRouter(
@@ -42,25 +42,32 @@ router = APIRouter(
 )
 
 
-def retrieve(db: DatabaseClient, texts: list[str], limit: int) -> list[Match]:
-    """Passages for each text in turn (the searched hadith first), without duplicates."""
-    per_text = max(1, limit // max(1, len(texts)) + 1)
-    found: list[Match] = []
-    seen: set[str] = set()
-    for text in texts:
-        for match in db.search(text, per_text):
-            if match.id not in seen:
-                seen.add(match.id)
-                found.append(match)
-    return found[:limit]
+def retrieve(db: DatabaseClient, searched: str, asked: list[tuple[str, bool]], limit: int) -> list[Match]:
+    """Passages without duplicates: the searched hadith's first, then the question's — its
+    subject's (searched by title) and its own words' — taken in turn."""
+    queries = ([(searched, False)] if searched else []) + asked
+    per_text = max(1, limit // max(1, len(queries)) + 1)
+    results = [db.search(text, per_text, by_title=by_title) for text, by_title in queries]
+    lead, rest = (results[0], results[1:]) if searched else ([], results)
+    turns = [found[i] for i in range(per_text) for found in rest if i < len(found)]
+    unique: dict[str, Match] = {}
+    for match in lead + turns:
+        unique.setdefault(match.id, match)
+    return list(unique.values())[:limit]
 
 
 def _contexts(db: DatabaseClient, rag: RAGService, payload: ChatRequest) -> list[Match]:
     settings = get_settings()
-    # An English question or searched text looks for its passages through its Arabic rendering.
-    texts = [for_search(t.strip(), rag)[0] for t in (payload.context_query, payload.question) if t.strip()]
+    # An English searched text looks for its passages through its Arabic rendering; an English
+    # question through its word-for-word rendering, and a question through its subject too.
+    searched = for_search(payload.context_query.strip(), rag)[0] if payload.context_query.strip() else ""
+    asked: list[tuple[str, bool]] = []
+    if payload.question.strip():
+        question = for_question(payload.question.strip(), rag)
+        subject = subject_of(question)
+        asked = ([(subject, True)] if subject else []) + [(question, False)]
     try:
-        found = retrieve(db, texts, settings.chat_context_passages)
+        found = retrieve(db, searched, asked, settings.chat_context_passages)
     except DatabaseError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
     # Only passages that are about the question: the closest text to «ما عاصمة فرنسا؟» is still

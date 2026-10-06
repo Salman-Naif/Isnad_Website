@@ -169,3 +169,18 @@ def test_a_chain_without_its_own_text_is_not_given_to_the_model(client, db, rag)
         "id": "m5", "text": "حدثنا هشام بن عروة عن أبيه عن عائشة عن النبي صلى الله عليه وسلم بمثله ."})]
     ask(client)
     assert [c.id for c in rag.calls[0]["contexts"]] == [HADITH.id]
+
+
+def test_a_question_is_searched_by_its_subject_too(client, db):
+    from app.models.schemas import Match
+
+    db.matches = [Match(id="niyya", text="إنما الأعمال بالنيات", similarity=0.8, kind="structured_hadith")]
+    client.post("/api/chat", json={"question": "من روى حديث النية؟"})
+    assert db.searches[0][0] == "النية" and db.by_title[0] is True  # the subject, by title
+    assert db.searches[1][0] == "من روى حديث النية؟" and db.by_title[1] is False  # then the question
+
+
+def test_a_question_with_no_subject_of_its_own_searches_the_text_first(client, db):
+    client.post("/api/chat", json={"question": "من رواه؟ وما حكمه؟", "context_query": "إنما الأعمال بالنيات"})
+    assert [s[0] for s in db.searches] == ["إنما الأعمال بالنيات", "من رواه؟ وما حكمه؟"]
+    assert db.by_title == [False, False]

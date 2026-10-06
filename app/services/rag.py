@@ -17,7 +17,13 @@ from app.config import get_settings
 from app.models.schemas import Match, SanadNode
 from app.services import guard
 from app.services.guard import NO_CONTEXT_ANSWER, OUT_OF_SCOPE_ANSWER, OUT_OF_SCOPE_ANSWER_EN
-from app.services.language import TRANSLATION_PROMPT, TranslationCache, language_of, looks_arabic
+from app.services.language import (
+    QUESTION_PROMPT,
+    TRANSLATION_PROMPT,
+    TranslationCache,
+    language_of,
+    looks_arabic,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -142,18 +148,20 @@ class RAGService:
         chunks = self._complete(_messages(question, contexts, history, subject), stream=True)
         return self._pieces(chunks)
 
-    def to_arabic(self, text: str) -> str:
-        """An Arabic rendering of the visitor's English text, to search the books with — never
-        shown as a hadith (app/services/language.py)."""
-        cached = self._renderings.get(text)
+    def to_arabic(self, text: str, question: bool = False) -> str:
+        """An Arabic rendering of the visitor's English text (or question, word for word), to
+        search the books with — never shown as a hadith (app/services/language.py)."""
+        key = f"?{text}" if question else text
+        cached = self._renderings.get(key)
         if cached:
             return cached
-        messages = [{"role": "system", "content": TRANSLATION_PROMPT}, {"role": "user", "content": text}]
+        prompt = QUESTION_PROMPT if question else TRANSLATION_PROMPT
+        messages = [{"role": "system", "content": prompt}, {"role": "user", "content": text}]
         response = self._complete(messages, stream=False, max_tokens=TRANSLATION_MAX_TOKENS)
         arabic = (response.choices[0].message.content or "").strip() if response.choices else ""
         if not looks_arabic(arabic):
             raise RAGError("تعذّرت ترجمة النص للبحث")
-        self._renderings.put(text, arabic)
+        self._renderings.put(key, arabic)
         return arabic
 
     def _pieces(self, chunks) -> Iterator[str]:

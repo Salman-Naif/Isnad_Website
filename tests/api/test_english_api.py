@@ -50,6 +50,7 @@ def test_an_english_question_finds_its_passages_in_arabic(client, db, rag):
     assert [s[0] for s in db.searches] == ["إنما الأعمال بالنيات", "من رواه؟"]
     assert body["answer"] == rag.reply and body["warnings"] == [] and not body["refused"]
     assert rag.calls[0]["question"] == "Who narrated it?"  # the model is asked the visitor's question
+    assert rag.questions == ["Who narrated it?"]  # a question is rendered word for word, not as a hadith
 
 
 def test_an_english_question_with_nothing_in_the_sources(client, db, rag):
