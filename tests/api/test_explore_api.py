@@ -14,7 +14,7 @@ def explore(client, query="الصلاة أهم شيء", **body):
     return client.post("/api/explore", json={"query": query, **body})
 
 
-IDEA = "الصلاة أهم شيء في حياة المسلم"  # longer than a subject: sorted by closeness
+IDEA = "الصلاة هي أهم شيء في حياة المسلم وأول ما يحاسب عليه"  # longer than a subject: sorted by closeness
 
 
 def test_hadiths_about_the_idea_come_closest_first_with_their_ruling(client, db):

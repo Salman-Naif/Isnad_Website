@@ -66,6 +66,7 @@ const STRINGS = {
     sanad_extracted: "استُخرج السند آليًا من نص الرواية، وقد يحتاج إلى مراجعة.",
     other_matches: "نصوص أخرى مشابهة",
     other_similarity: (n) => `تشابه ${n}%`,
+    subject_searched: "ما كتبته عنوان لا نصّ حديث، فعُرضت الأحاديث في هذا المعنى.",
     explore_title: "أحاديث في هذا المعنى",
     explore_count: (n) => `${n === 1 ? "نص واحد" : n === 2 ? "نصّان" : `${n} نصوص`}، من الأقرب إلى معنى ما كتبت. الحكم منسوب لقائله كما ورد في المصدر.`,
     explore_none: "لا توجد في المصادر المعتمدة نصوص قريبة من هذا المعنى. جرّب صياغة أخرى.",
@@ -142,6 +143,7 @@ const STRINGS = {
     sanad_extracted: "This chain was read automatically from the narration's wording and may need review.",
     other_matches: "Other similar texts",
     other_similarity: (n) => `Similarity ${n}%`,
+    subject_searched: "What you wrote is a subject, not the words of a hadith, so the hadiths about it are shown.",
     explore_title: "Hadiths with this meaning",
     explore_count: (n) => `${n === 1 ? "One text" : `${n} texts`}, closest to what you wrote first. Each ruling is attributed to its scholar as the source records it.`,
     explore_none: "The approved sources hold no texts close to this meaning. Try another wording.",
@@ -268,6 +270,14 @@ function setStatus(text, kind = "info") {
   node.hidden = !text;
 }
 
+// A few words naming a subject, not a text to verify (the database ranks it by its words too).
+const SUBJECT_MAX_WORDS = 6;
+
+function isSubject(query) {
+  const words = query.split(/\s+/).filter(Boolean);
+  return words.length > 0 && words.length <= SUBJECT_MAX_WORDS;
+}
+
 // ---------- verification ----------
 
 function setMode(next) {
@@ -301,6 +311,15 @@ async function verify(event) {
     const data = await post("/search", { query, top_k: 5 });
     lastQuery = query;
     renderSuggestions();
+    // A subject («فضل الأم», «بر الوالدين») is not a text to verify: when nothing matches it as a
+    // text, the hadiths about it are shown instead of an empty verdict.
+    if (data.verdict === "no_match" && isSubject(query)) {
+      $("result").hidden = true;
+      renderExplore(await post("/explore", { query, top_k: 10 }));
+      setStatus(t("subject_searched"));
+      $("explore").scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     $("explore").hidden = true;
     renderResult(data);
     setStatus("");
