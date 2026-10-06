@@ -57,6 +57,7 @@ const STRINGS = {
     scholar: "المحدّث",
     topic: "الموضوع",
     source: "المصدر",
+    also_in: "ورد أيضًا في",
     compiler: "المصنّف",
     no_ruling: "لا يتوفر حكم موثّق لهذا النص في المصادر المرفوعة",
     sanad_title: "شجرة الإسناد",
@@ -132,6 +133,7 @@ const STRINGS = {
     scholar: "Scholar",
     topic: "Chapter",
     source: "Source",
+    also_in: "Also in",
     compiler: "Compiler",
     no_ruling: "No documented ruling for this text in the uploaded sources",
     sanad_title: "Chain of narration (isnad)",
@@ -350,6 +352,7 @@ function renderResult(data) {
       [t("scholar"), best.mohaddith],
       [t("topic"), best.topic],
       [t("source"), best.source],
+      [t("also_in"), alsoIn(best)],
       [t("compiler"), best.compiler],
     ]) {
       if (!value && cls !== "ruling missing") continue;
@@ -366,11 +369,17 @@ function renderResult(data) {
   list.replaceChildren();
   for (const item of rest) {
     const li = el("li");
-    const meta = [t("other_similarity", Math.round(item.similarity * 100)), item.hukm, item.source].filter(Boolean);
+    const meta = [t("other_similarity", Math.round(item.similarity * 100)), item.hukm, item.source, alsoIn(item, true)].filter(Boolean);
     li.append(arabic(el("span", item.text, "other-text")), el("span", meta.join(" · "), "other-meta"));
     list.append(li);
   }
   $("other-matches").hidden = rest.length === 0;
+}
+
+// The other books the same hadith is in: it is shown once (app/services/grouping.py).
+function alsoIn(item, labelled = false) {
+  const books = (item.also_in || []).join("، ");
+  return books && labelled ? `${t("also_in")}: ${books}` : books;
 }
 
 // ---------- search by meaning ----------
@@ -422,7 +431,7 @@ function renderExplore(data) {
     const ruling = item.hukm ? (item.mohaddith ? `${item.hukm} — ${item.mohaddith}` : item.hukm) : t("no_ruling");
     const badge = el("span", ruling, item.hukm ? "ruling-badge" : "ruling-badge missing");
     meta.append(item.hukm ? arabic(badge) : badge);
-    for (const value of [item.source, item.topic]) if (value) meta.append(arabic(el("span", value, "muted")));
+    for (const value of [item.source, alsoIn(item, true), item.topic]) if (value) meta.append(arabic(el("span", value, "muted")));
     meta.append(el("span", t("closeness", Math.round(item.similarity * 100)), "muted"));
     li.append(meta);
 
