@@ -9,6 +9,14 @@ from app.config import get_settings
 from app.services.database import DatabaseClient, DatabaseError
 
 
+@pytest.fixture(autouse=True)
+def no_waiting(monkeypatch):
+    """Retries wait between tries; not in tests."""
+    import app.services.database as database
+
+    monkeypatch.setattr(database.time, "sleep", lambda seconds: None)
+
+
 def client_with(handler) -> tuple[DatabaseClient, list[httpx.Request]]:
     seen: list[httpx.Request] = []
 
@@ -94,3 +102,46 @@ def test_events_never_raise():
     db, seen = client_with(lambda r: httpx.Response(500))
     db.record_event("visit", "v" * 32)  # must not raise
     assert json.loads(seen[0].content)["type"] == "visit"
+
+
+def test_a_restarting_database_is_tried_again(monkeypatch):
+    import app.services.database as database
+
+    waits: list[float] = []
+    monkeypatch.setattr(database.time, "sleep", waits.append)
+    replies = iter([httpx.ConnectError("restarting"), httpx.Response(503, json={}),
+                    httpx.Response(200, json={"matches": [MATCH]})])
+
+    def restarting(request):
+        reply = next(replies)
+        if isinstance(reply, Exception):
+            raise reply
+        return reply
+
+    db, seen = client_with(restarting)
+    assert [m.id for m in db.search("نص", 3)] == ["hadith-1"]
+    assert len(seen) == 3 and waits == list(database.RETRY_DELAYS)
+
+
+def test_a_database_still_down_after_the_retries_is_a_friendly_error(monkeypatch):
+    import app.services.database as database
+
+    monkeypatch.setattr(database.time, "sleep", lambda s: None)
+    db, seen = client_with(lambda r: httpx.Response(503, json={}))
+    with pytest.raises(DatabaseError, match="غير متاحة"):
+        db.search("نص", 3)
+    assert len(seen) == 1 + len(database.RETRY_DELAYS)
+
+
+def test_a_slow_database_is_not_tried_again(monkeypatch):
+    import app.services.database as database
+
+    monkeypatch.setattr(database.time, "sleep", lambda s: None)
+
+    def slow(request):
+        raise httpx.ReadTimeout("slow")
+
+    db, seen = client_with(slow)
+    with pytest.raises(DatabaseError):
+        db.search("نص", 3)
+    assert len(seen) == 1

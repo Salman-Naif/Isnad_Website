@@ -26,6 +26,8 @@ class DatabaseError(Exception):
 
 
 UNAVAILABLE = "خدمة قاعدة البيانات غير متاحة حاليًا، حاول مرة أخرى بعد قليل"
+RETRY_DELAYS = (1.0, 2.0)  # seconds before the 2nd and 3rd try
+RETRY_STATUSES = {502, 503, 504}
 
 
 class DatabaseClient:
@@ -44,6 +46,21 @@ class DatabaseClient:
         if not (self.settings.database_url and self.settings.site_api_key):
             logger.error("DATABASE_URL or SITE_API_KEY is not set")
             raise DatabaseError(UNAVAILABLE)
+        # A redeploy stops the database service for a moment (its volume moves to the new
+        # copy): a refused connection or a 502/503/504 is tried again shortly, so a visitor
+        # rarely sees it. A slow answer is not: it already waited its full timeout.
+        for delay in RETRY_DELAYS:
+            try:
+                res = self._client.post(path, json=payload)
+            except (httpx.ConnectError, httpx.RemoteProtocolError):
+                pass
+            except httpx.HTTPError as exc:
+                logger.error("Database service unreachable: %s", exc)
+                raise DatabaseError(UNAVAILABLE) from exc
+            else:
+                if res.status_code not in RETRY_STATUSES:
+                    return res
+            time.sleep(delay)
         try:
             return self._client.post(path, json=payload)
         except httpx.HTTPError as exc:
