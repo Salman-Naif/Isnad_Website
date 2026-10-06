@@ -67,8 +67,9 @@ class DatabaseClient:
             self._config_fetched_at = time.monotonic()
             return self._config
 
-    def search(self, query: str, top_k: int) -> list[Match]:
-        res = self._post("/api/v1/search", {"query": query, "top_k": top_k})
+    def search(self, query: str, top_k: int, by_title: bool = False) -> list[Match]:
+        body = {"query": query, "top_k": top_k, **({"by_title": True} if by_title else {})}
+        res = self._post("/api/v1/search", body)
         if res.status_code == 401:
             logger.error("The database refused SITE_API_KEY — it must match the database service")
             raise DatabaseError(UNAVAILABLE)

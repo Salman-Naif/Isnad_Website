@@ -108,3 +108,15 @@ def test_shares_the_search_rate_limit(client, db, monkeypatch):
     assert client.post("/api/search", json={"query": "نص"}).status_code == 200
     assert explore(client).status_code == 200
     assert explore(client).status_code == 429
+
+
+def test_a_search_by_title_asks_the_database_for_its_words_and_keeps_its_order(client, db):
+    db.matches = [hadith("fast", 0.5, "من صام رمضان إيمانا واحتسابا"), hadith("near", 0.7, "الصبر ضياء")]
+    results = explore(client, "الصيام", by_title=True).json()["results"]
+    assert db.by_title == [True]
+    assert [r["similarity"] for r in results] == [0.5, 0.7]
+
+
+def test_a_search_by_meaning_is_not_by_title(client, db):
+    explore(client)
+    assert db.by_title == [False]

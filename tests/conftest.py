@@ -49,16 +49,18 @@ class FakeDatabase:
         self.config = SiteConfig()
         self.matches: list[Match] = []
         self.searches: list[tuple[str, int]] = []
+        self.by_title: list[bool] = []
         self.events: list[dict] = []
         self.error: DatabaseError | None = None
 
     def site_config(self) -> SiteConfig:
         return self.config
 
-    def search(self, query: str, top_k: int) -> list[Match]:
+    def search(self, query: str, top_k: int, by_title: bool = False) -> list[Match]:
         if self.error:
             raise self.error
         self.searches.append((query, top_k))
+        self.by_title.append(by_title)
         return self.matches[:top_k]
 
     def record_event(self, type_, visitor_id, query="", result="", latency_ms=None) -> None:

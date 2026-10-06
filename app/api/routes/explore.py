@@ -47,7 +47,7 @@ def explore(
     text, lang, searched_as = for_search(query, rag)  # an English idea, through its Arabic rendering
     try:
         # More than shown: a hadith found in several books is shown once (grouping.group).
-        matches = db.search(text, min(payload.top_k * 2, MAX_DB_TOP_K))
+        matches = db.search(text, min(payload.top_k * 2, MAX_DB_TOP_K), by_title=payload.by_title)
     except DatabaseError as exc:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
 
@@ -60,7 +60,8 @@ def explore(
         for m in matches
         if m.similarity >= floor
     ]
-    if not is_subject(text):  # a subject keeps the database's order (grouping.is_subject)
+    # A subject or a title keeps the database's order, which ranks it by its words too.
+    if not (payload.by_title or is_subject(text)):
         results.sort(key=lambda r: r.similarity, reverse=True)
     results = group(results, payload.top_k)
     background.add_task(

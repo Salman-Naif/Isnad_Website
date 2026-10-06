@@ -39,6 +39,12 @@ def test_search_sends_the_site_key_and_parses_matches():
     assert match.hukm == "صحيح" and match.sanad[0].name == "النبي ﷺ"
 
 
+def test_a_search_by_title_says_so():
+    db, seen = client_with(lambda r: httpx.Response(200, json={"matches": []}))
+    db.search("الصيام", 20, by_title=True)
+    assert json.loads(seen[0].content) == {"query": "الصيام", "top_k": 20, "by_title": True}
+
+
 @pytest.mark.parametrize("status_code", [401, 500, 503])
 def test_search_failures_become_a_friendly_error(status_code):
     db, _ = client_with(lambda r: httpx.Response(status_code, json={}))
