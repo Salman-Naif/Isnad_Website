@@ -32,11 +32,10 @@
 
   {% if config.search_enabled %}
   <form id="search-form" class="card search-card" novalidate>
-    <!-- Verify one text, find the hadiths about an idea, or the hadiths under a title -->
+    <!-- Verify one text, or find the hadiths on a subject or about an idea -->
     <div class="mode-switch" role="group" aria-label="نوع البحث" data-i18n-aria="mode_group">
       <button type="button" class="mode" data-mode="verify" aria-pressed="true">{{ icon("check", "icon sm") }}<span data-i18n="mode_verify">تحقّق من نص</span></button>
       <button type="button" class="mode" data-mode="explore" aria-pressed="false">{{ icon("search", "icon sm") }}<span data-i18n="mode_explore">ابحث بالمعنى</span></button>
-      <button type="button" class="mode" data-mode="title" aria-pressed="false">{{ icon("book", "icon sm") }}<span data-i18n="mode_title">ابحث بالعنوان</span></button>
     </div>
     <!-- What the chosen search does, and what to write in it -->
     <p id="mode-hint" class="mode-hint muted small"></p>

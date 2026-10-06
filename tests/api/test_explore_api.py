@@ -117,6 +117,15 @@ def test_a_search_by_title_asks_the_database_for_its_words_and_keeps_its_order(c
     assert [r["similarity"] for r in results] == [0.5, 0.7]
 
 
-def test_a_search_by_meaning_is_not_by_title(client, db):
-    explore(client)
+def test_a_subject_is_searched_by_title_without_asking(client, db):
+    db.matches = [hadith("fast", 0.5, "من صام رمضان إيمانا واحتسابا"), hadith("near", 0.7, "الصبر ضياء")]
+    results = explore(client, "الصيام").json()["results"]
+    assert db.by_title == [True]
+    assert [r["similarity"] for r in results] == [0.5, 0.7]  # the database's order
+
+
+def test_a_longer_idea_is_searched_by_meaning_only(client, db):
+    db.matches = [hadith("a", 0.5, "نص أول"), hadith("b", 0.7, "نص ثان")]
+    results = explore(client, "من يحسن إلى أمه ويبرها في حياتها يدخل الجنة").json()["results"]
     assert db.by_title == [False]
+    assert [r["similarity"] for r in results] == [0.7, 0.5]  # closest in meaning first

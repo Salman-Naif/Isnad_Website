@@ -7,7 +7,7 @@ const MAX_HISTORY = 10; // must not exceed ChatRequest.history max_length
 const $ = (id) => document.getElementById(id);
 
 let lastQuery = ""; // the last verified text (or idea searched), sent to the chat as context
-let mode = "verify"; // "verify" one text, "explore" the hadiths about an idea, or those under a "title"
+let mode = "verify"; // "verify" one text, or "explore" the hadiths on a subject or about an idea
 
 let chatBusy = false; // one question at a time, so answers stay in order
 const history = []; // chat turns: {role, content}
@@ -27,20 +27,15 @@ const STRINGS = {
     mode_group: "نوع البحث",
     mode_verify: "تحقّق من نص",
     mode_explore: "ابحث بالمعنى",
-    mode_title: "ابحث بالعنوان",
     query_label: "النص المراد التحقق منه",
     verify_label: "تحقّق",
     verify_placeholder: "الصق نص الحديث أو الاقتباس هنا، بالتشكيل أو بدونه…",
     verify_hint: "تحقّق من نص: نطابق ما تكتبه مع نصوص الأحاديث في المصادر، ويستوي أن تكتبه بالتشكيل أو بدونه، بالعربية أو الإنجليزية.",
     verify_empty: "اكتب نصًا للتحقق منه",
     explore_label: "ابحث",
-    explore_placeholder: "اكتب المعنى بكلماتك، مثل: من يحسن إلى أمه يدخل الجنة…",
-    explore_hint: "ابحث بالمعنى (بحث دلالي): اكتب جملة أو فكرة بكلماتك، ونجد الأحاديث القريبة منها في المعنى ولو اختلفت ألفاظها. للبحث بموضوع اختر «ابحث بالعنوان».",
-    explore_empty: "اكتب فكرة أو جملة للبحث عن معناها",
-    title_label: "ابحث",
-    title_placeholder: "اكتب عنوانًا، مثل: الصيام، بر الوالدين، فضل الأم…",
-    title_hint: "ابحث بالعنوان: اكتب موضوعًا من كلمة أو كلمتين، ونعرض الأحاديث التي فيها هذا الموضوع أولًا.",
-    title_empty: "اكتب عنوانًا للبحث عنه",
+    explore_placeholder: "اكتب موضوعًا أو فكرة، مثل: الصيام، بر الوالدين، من يحسن إلى أمه يدخل الجنة…",
+    explore_hint: "ابحث بالمعنى (بحث دلالي): اكتب موضوعًا (الصيام، بر الوالدين) فنعرض أحاديث أبوابه أولًا، أو جملة بكلماتك فنجد الأحاديث القريبة منها في المعنى ولو اختلفت ألفاظها.",
+    explore_empty: "اكتب موضوعًا أو فكرة للبحث عنها",
     searching: "جارٍ البحث في المصادر…",
     exploring: "جارٍ البحث عن الأحاديث في هذا المعنى…",
     search_off: "البحث متوقف مؤقتًا، يرجى المحاولة لاحقًا.",
@@ -111,20 +106,15 @@ const STRINGS = {
     mode_group: "Search type",
     mode_verify: "Verify a text",
     mode_explore: "Search by meaning",
-    mode_title: "Search by title",
     query_label: "The text to verify",
     verify_label: "Verify",
     verify_placeholder: "Paste the hadith or quote here, with or without diacritics…",
     verify_hint: "Verify a text: what you write is matched against the hadiths' own words in the sources, with or without diacritics, in Arabic or English.",
     verify_empty: "Write a text to verify",
     explore_label: "Search",
-    explore_placeholder: "Write the meaning in your own words, e.g. whoever is good to his mother enters Paradise…",
-    explore_hint: "Search by meaning (semantic search): write a sentence or an idea in your own words, and we find the hadiths closest to it in meaning, whatever their wording. To search a topic, choose “Search by title”.",
-    explore_empty: "Write an idea or a sentence to search for its meaning",
-    title_label: "Search",
-    title_placeholder: "Write a title, e.g. fasting, kindness to parents…",
-    title_hint: "Search by title: write a topic in a word or two, and the hadiths about it come first.",
-    title_empty: "Write a title to search for",
+    explore_placeholder: "Write a subject or an idea, e.g. fasting, kindness to parents, whoever is good to his mother enters Paradise…",
+    explore_hint: "Search by meaning (semantic search): write a subject (fasting, kindness to parents) and the hadiths of its chapters come first, or a sentence in your own words and we find the hadiths closest to it in meaning, whatever their wording.",
+    explore_empty: "Write a subject or an idea to search for",
     searching: "Searching the sources…",
     exploring: "Looking for hadiths with this meaning…",
     search_off: "Search is paused for now, please try again later.",
@@ -306,7 +296,7 @@ function setMode(next) {
 
 function submitSearch(event) {
   if (mode === "verify") return verify(event);
-  return explore(event, mode === "title");
+  return explore(event);
 }
 
 async function verify(event) {
@@ -331,7 +321,7 @@ async function verify(event) {
     // text, the hadiths about it are shown instead of an empty verdict.
     if (data.verdict === "no_match" && isSubject(query)) {
       $("result").hidden = true;
-      renderExplore(await post("/explore", { query, top_k: 10, by_title: true }));
+      renderExplore(await post("/explore", { query, top_k: 10 }));
       setStatus(t("subject_searched"));
       $("explore").scrollIntoView({ behavior: "smooth", block: "start" });
       return;
@@ -419,11 +409,11 @@ function alsoIn(item, labelled = false) {
 
 // ---------- search by meaning ----------
 
-async function explore(event, byTitle = false) {
+async function explore(event) {
   event.preventDefault();
   const query = $("query").value.trim();
   if (!query) {
-    setStatus(t(byTitle ? "title_empty" : "explore_empty"), "error");
+    setStatus(t("explore_empty"), "error");
     $("query").focus();
     return;
   }
@@ -434,7 +424,7 @@ async function explore(event, byTitle = false) {
   setStatus(t("exploring"));
 
   try {
-    const data = await post("/explore", { query, top_k: 10, by_title: byTitle });
+    const data = await post("/explore", { query, top_k: 10 });
     lastQuery = query;
     renderSuggestions();
     $("result").hidden = true;
