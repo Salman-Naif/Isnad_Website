@@ -14,7 +14,7 @@ only from the sources.
 The sources, their search and the admin dashboard live in the separate database service,
 **Isnad_Database**. This repository is the website only.
 
-**Team:** فريق إسناد (Isnad) — سلمان نايف المحيسن (almuhaysins@outlook.sa) ·
+**Team:** فريق إسناد (Isnad) — سلمان نايف المحيسن (almuhaysins@gmail.com) ·
 نوت عبدالعزيز الجهني (noota123db@gmail.com)
 
 Isnad is the team's entry in **تحدي الذكاء الاصطناعي في خدمة المحتوى الإسلامي** (The AI
