@@ -21,7 +21,7 @@
 
 | Member               | Contact                |
 | -------------------- | ---------------------- |
-| سلمان نايف المحيسن   | almuhaysins@outlook.sa |
+| سلمان نايف المحيسن   | almuhaysins@gmail.com |
 | نوت عبدالعزيز الجهني | noota123db@gmail.com   |
 
 ## Problem, beneficiary and success measure
